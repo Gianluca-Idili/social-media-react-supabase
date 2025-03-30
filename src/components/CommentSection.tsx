@@ -19,7 +19,7 @@ export interface Comment {
   parent_comment_id: number | null;
   content: string;
   user_id: string;
-  crate_at: string;
+  created_at: string;
   author: string;
 }
 
