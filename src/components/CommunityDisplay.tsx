@@ -7,40 +7,59 @@ interface Props {
   communityId: number;
 }
 
-interface PostWhithCommunity extends Post {
-  communities: {
-    name: string;
-  };
-}
 
-export const fetchCommunityPost = async (
-  communityId: number
-): Promise<PostWhithCommunity[]> => {
+const fetchCommunityName = async (communityId: number): Promise<string> => {
+  const { data, error } = await supabase
+    .from("communities")
+    .select("name")
+    .eq("id", communityId)
+    .single();
 
+  if (error) throw new Error(error.message);
+  return data.name;
+};
+
+
+const fetchCommunityPosts = async (communityId: number): Promise<Post[]> => {
   const { data, error } = await supabase
     .from("posts")
-    .select("*, communities(name)")
+    .select("*")
     .eq("community_id", communityId)
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
-  return data as PostWhithCommunity[];
+  return data || [];
 };
 
 export const CommunityDisplay = ({ communityId }: Props) => {
-  const { data, error, isLoading } = useQuery<PostWhithCommunity[], Error>({
-    queryKey: ["communityPost", communityId],
-    queryFn: () => fetchCommunityPost(communityId),
+  
+  const {
+    data: communityName,
+    isLoading: loadingName,
+    error: nameError
+  } = useQuery({
+    queryKey: ["communityName", communityId],
+    queryFn: () => fetchCommunityName(communityId)
   });
 
-  if (isLoading) {
-    return <div className="text-center py-4"> Loading communities...</div>;
+  
+  const {
+    data: posts,
+    isLoading: loadingPosts,
+    error: postsError
+  } = useQuery({
+    queryKey: ["communityPosts", communityId],
+    queryFn: () => fetchCommunityPosts(communityId)
+  });
+
+  if (loadingName || loadingPosts) {
+    return <div className="text-center py-4">Loading...</div>;
   }
 
-  if (error) {
+  if (nameError || postsError) {
     return (
       <div className="text-center text-red-500 py-4">
-        Error: {error.message}
+        Error: {nameError?.message || postsError?.message}
       </div>
     );
   }
@@ -48,18 +67,18 @@ export const CommunityDisplay = ({ communityId }: Props) => {
   return (
     <div>
       <h2 className="text-6xl font-bold mb-6 text-center bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-        {data && data[0].communities.name} Community Posts
+        {communityName} Community Posts
       </h2>
 
-      {data && data.length > 0 ? (
+      {posts && posts.length > 0 ? (
         <div className="flex flex-wrap gap-6 justify-center">
-          {data.map((post, key) => (
+          {posts.map((post, key) => (
             <PostItem key={key} post={post} />
           ))}
         </div>
       ) : (
         <p className="text-center text-gray-400">
-          No posts in this community yet.
+          No posts in {communityName} yet.
         </p>
       )}
     </div>
