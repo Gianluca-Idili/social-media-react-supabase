@@ -20,16 +20,28 @@ export const Navbar = () => {
 
           {/* Desktop Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-gray-300 hover:text-white transition-colors">
+            <Link
+              to="/"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
               Home
             </Link>
-            <Link to="/create" className="text-gray-300 hover:text-white transition-colors">
+            <Link
+              to="/create"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
               Create Post
             </Link>
-            <Link to="/communities" className="text-gray-300 hover:text-white transition-colors">
+            <Link
+              to="/communities"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
               Communities
             </Link>
-            <Link to="/community/create" className="text-gray-300 hover:text-white transition-colors">
+            <Link
+              to="/community/create"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
               Create Community
             </Link>
           </div>
@@ -46,7 +58,10 @@ export const Navbar = () => {
                   />
                 )}
                 <span className="text-gray-300">{displayName}</span>
-                <button onClick={signOut} className="bg-red-500 px-3 py-1 rounded">
+                <button
+                  onClick={signOut}
+                  className="bg-red-500 px-3 py-1 rounded"
+                >
                   Sign Out
                 </button>
               </div>
@@ -177,14 +192,6 @@ export const Navbar = () => {
                     className="w-full text-left px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 flex items-center"
                   >
                     <span>Sign in with GitHub</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 flex items-center"
-                  >
-                    <span>Sign in with Google</span>
                   </button>
                 </>
               )}
