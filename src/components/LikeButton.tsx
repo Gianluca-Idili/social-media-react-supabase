@@ -68,7 +68,6 @@ export const LikeButton = ({ postId }: Props) => {
   } = useQuery<Vote[], Error>({
     queryKey: ["votes", postId],
     queryFn: () => fetchVotes(postId),
-    refetchInterval: 5000,
   });
 
   const { mutate } = useMutation({
