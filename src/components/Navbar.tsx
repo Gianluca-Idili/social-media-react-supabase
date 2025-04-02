@@ -26,11 +26,13 @@ export const Navbar = () => {
             >
               Home
             </Link>
+
             <Link
-              to="/create"
-              className="text-gray-300 hover:text-white transition-colors"
+              to={`/${user ? "create" : ""}`}
+              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+              onClick={() => setMenuOpen(false)}
             >
-              Create Post
+              {user ? "Create Post" : "Log In for Create Post"}
             </Link>
             <Link
               to="/communities"
@@ -39,10 +41,10 @@ export const Navbar = () => {
               Communities
             </Link>
             <Link
-              to="/community/create"
+              to={`/${user ? "community/create" : ""}`}
               className="text-gray-300 hover:text-white transition-colors"
             >
-              Create Community
+              {user ? "Create Community" : "Log In for Create Community"}
             </Link>
           </div>
 
@@ -148,12 +150,13 @@ export const Navbar = () => {
             >
               Home
             </Link>
+
             <Link
-              to="/create"
+              to={`/${user ? "create" : ""}`}
               className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               onClick={() => setMenuOpen(false)}
             >
-              Create Post
+              {user ? "Create Post" : "Log In for Create Post"}
             </Link>
             <Link
               to="/communities"
@@ -163,11 +166,11 @@ export const Navbar = () => {
               Communities
             </Link>
             <Link
-              to="/community/create"
+              to={`/${user ? "community/create" : ""}`}
               className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               onClick={() => setMenuOpen(false)}
             >
-              Create Community
+             {user ? "Create Community" : "Log In for Create Community"}
             </Link>
 
             {/* Auth Buttons */}
