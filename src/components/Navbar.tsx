@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 
 export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { signInWithGitHub, signOut, user } = useAuth();
+
+  useEffect(() => {
+    console.log("User ID:", user?.id);
+  }, [user]);
 
   const displayName = user?.user_metadata?.user_name || user?.email;
   const avatarUrl = user?.user_metadata?.avatar_url;
@@ -45,6 +49,19 @@ export const Navbar = () => {
               className="text-gray-300 hover:text-white transition-colors"
             >
               {user ? "Create Community" : "Log In for Create Community"}
+            </Link>
+
+            <Link
+              to={`/profile/${user?.id}`}
+              onClick={(e) => {
+                console.log("Navigating to profile of user:", user?.id); // DEBUG
+                if (!user) {
+                  e.preventDefault();
+                  signInWithGitHub();
+                }
+              }}
+            >
+              Profile
             </Link>
           </div>
 
@@ -144,6 +161,20 @@ export const Navbar = () => {
 
             {/* Navigation Links */}
             <Link
+              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+              to={`/profile/${user?.id}`}
+              onClick={(e) => {
+                if (!user) {
+                  e.preventDefault();
+                  signInWithGitHub();
+                }
+                setMenuOpen(false);
+              }}
+            >
+              Profile
+            </Link>
+
+            <Link
               to="/"
               className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               onClick={() => setMenuOpen(false)}
@@ -170,7 +201,7 @@ export const Navbar = () => {
               className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               onClick={() => setMenuOpen(false)}
             >
-             {user ? "Create Community" : "Log In for Create Community"}
+              {user ? "Create Community" : "Log In for Create Community"}
             </Link>
 
             {/* Auth Buttons */}

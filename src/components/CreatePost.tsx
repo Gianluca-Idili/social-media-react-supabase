@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "../supabase-client";
 import { useAuth } from "../context/AuthContext";
 import { Community, fetchCommunities } from "./CommunityList";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 interface PostInput {
   title: string;

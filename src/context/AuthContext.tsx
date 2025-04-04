@@ -15,18 +15,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({data: {session}}) => {
-            setUser(session?.user ?? null);
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
+          const user = session?.user ?? null;
+          setUser(user);
+      
+          if (user) {
+            // Check if profile exists
+            const { error } = await supabase
+              .from("profiles")
+              .select("id")
+              .eq("id", user.id)
+              .single();
+      
+            if (error && error.code === "PGRST116") {
+              // No profile found → create one
+              await supabase.from("profiles").insert({
+                id: user.id,
+                email: user.email,
+                username: user.user_metadata?.user_name || "",
+              });
+            }
+          }
         });
-
-        const {data: listener} = supabase.auth.onAuthStateChange((_, session) => {
-            setUser(session?.user ?? null);
-        });
-
-        return () => {
-            listener.subscription.unsubscribe();
-        }
-    }, [])
+      }, []);
 
     const signInWithGitHub = () => {
         supabase.auth.signInWithOAuth({provider: "github"})
