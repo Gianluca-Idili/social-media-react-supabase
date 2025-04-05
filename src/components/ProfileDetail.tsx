@@ -1,18 +1,40 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "../supabase-client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ProfileItem } from "./ProfileItem";
 import { CreateListButton } from "./CreateListButton";
-
+import { ProfileForm } from "./ProfileForm";
+import { CardList } from "./CardList";
 export interface Profile {
-  id: string; // Modificato da number a string (UUID)
+  id: string;
   username: string;
   email: string;
   created_at: string;
 }
 
 interface Props {
-  profileId: string; // Modificato da number a string
+  profileId: string;
+}
+interface Task {
+  id: string;
+  list_id: string;
+  description: string;
+  is_completed: boolean;
+  created_at?: string; // Aggiungi se esiste nel DB
+}
+
+interface ListWithTasks {
+  id: string;
+  user_id: string;
+  title: string;
+  type: string;
+  is_public: boolean;
+  reward?: string | null;
+  punishment?: string | null;
+  completed_at?: string | null;
+  expires_at?: string | null;
+  created_at: string;
+  tasks: Task[];
 }
 
 const fetchProfileById = async (id: string): Promise<Profile> => {
@@ -26,127 +48,135 @@ const fetchProfileById = async (id: string): Promise<Profile> => {
   return data as Profile;
 };
 
-export const ProfileDetail = ({ profileId }: Props) => {
-  const queryClient = useQueryClient();
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-  });
+const fetchListsWithTasks = async (userId: string) => {
+  const { data, error } = await supabase
+    .from("lists")
+    .select(
+      `
+      id,
+      user_id,
+      title,
+      type,
+      is_public,
+      reward,
+      punishment,
+      completed_at,
+      expires_at,
+      created_at,
+      tasks: tasks(
+        id,
+        list_id,
+        description,
+        is_completed
+      )
+    `
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
 
-  const { data, error, isPending } = useQuery<Profile, Error>({
+  if (error) {
+    console.error("Supabase error:", error);
+    throw new Error(error.message);
+  }
+
+  return data as ListWithTasks[];
+};
+
+export const ProfileDetail = ({ profileId }: Props) => {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const {
+    data: profileData,
+    error: profileError,
+    isPending: isProfilePending,
+  } = useQuery<Profile, Error>({
     queryKey: ["profile", profileId],
     queryFn: () => fetchProfileById(profileId),
   });
 
-  useEffect(() => {
-    console.log("Profile data:", data);
-    if (data) {
-      setFormData({
-        username: data.username || "",
-        email: data.email || "",
-      });
-    }
-  }, [data]);
-
-  const updateProfile = useMutation({
-    mutationFn: async (updatedData: Partial<Profile>) => {
-      const { error } = await supabase
-        .from("profiles")
-        .update(updatedData)
-        .eq("id", profileId);
-
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["profile", profileId],
-      });
-      setIsEditing(false);
-    },
+  const {
+    data: lists,
+    error: listsError,
+    isLoading: isLoadingLists,
+  } = useQuery({
+    queryKey: ["userLists", profileId],
+    queryFn: () => fetchListsWithTasks(profileId),
+    enabled: !!profileId, // Facoltativo: abilita solo se profileId esiste
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateProfile.mutate(formData);
-  };
-
-  if (isPending)
+  // Early returns dopo tutti gli hook
+  if (isProfilePending)
     return <div className="text-center py-8">Caricamento profilo...</div>;
-  if (error)
+
+  if (profileError)
     return (
       <div className="text-center py-8 text-red-400">
-        Errore: {error.message}
+        Errore: {profileError.message}
       </div>
     );
 
+  if (!profileData)
+    return (
+      <div className="text-center py-8">Nessun dato del profilo trovato</div>
+    );
   return (
     <div className="space-y-6 max-w-4xl mx-auto px-4">
       {isEditing ? (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-300 mb-2">Username</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full p-2 bg-gray-800 rounded"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-300 mb-2">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full p-2 bg-gray-800 rounded"
-            />
-          </div>
-
-          <div className="flex space-x-4">
-            <button
-              type="submit"
-              className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded"
-              disabled={updateProfile.isPending}
-            >
-              {updateProfile.isPending ? "Salvataggio..." : "Salva"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsEditing(false)}
-              className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded"
-            >
-              Annulla
-            </button>
-          </div>
-        </form>
+        <ProfileForm
+          profileId={profileId}
+          initialData={{
+            username: profileData?.username || "",
+            email: profileData?.email || "",
+          }}
+          onSuccess={() => setIsEditing(false)} // Callback per chiudere l'editing
+        />
       ) : (
         <>
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-center bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent break-words overflow-hidden">
-            Profilo di {data?.username || "Non hai un username"} =D
+            Profilo di {profileData?.username || "Non hai un username"} =D
           </h2>
 
           <div>
             <ProfileItem
-              username={data?.username || ""}
-              email={data?.email || ""}
-              createdAt={data?.created_at || ""}
+              username={profileData?.username || ""}
+              email={profileData?.email || ""}
+              createdAt={profileData?.created_at || ""}
               onEdit={() => setIsEditing(true)}
             />
           </div>
-          <div>
-            <CreateListButton />
+
+          {/* Bottone per creare liste */}
+          <div className="mt-10 space-y-6">
+            <div>
+              <CreateListButton />
+            </div>
+
+            {/* Sezione Liste */}
+            <h3 className="text-2xl text-center md:text-3xl font-medium bg-gradient-to-r from-pink-400 to-purple-500 bg-clip-text text-transparent mb-6">
+          Le Tue Liste 
+        </h3>
+
+            {isLoadingLists ? (
+              <div className="text-center py-4">Caricamento liste...</div>
+            ) : listsError ? (
+              <div className="text-center py-4 text-red-400">
+                Errore nel caricamento liste
+              </div>
+            ) : lists && lists.length > 0 ? (
+              lists.map((list) => <CardList key={list.id} list={list} />)
+            ) : (
+              <div className="text-center py-10">
+                <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg border border-gray-700">
+                  <p className="text-gray-300 mb-3">🎯</p>
+                  <h4 className="text-lg font-medium text-gray-200">
+                    Nessuna lista creata ancora
+                  </h4>
+                  <p className="text-gray-400 mt-1">
+                    Crea la tua prima lista per iniziare a organizzare i task!
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}

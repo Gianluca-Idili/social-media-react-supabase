@@ -1,69 +1,160 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { GiftIcon, SkullIcon, TrashIcon } from "../svgs/Svgs";
+import { ListItem } from "./ListItem";
+import { useAuth } from "../context/AuthContext";
+import { v4 as uuidv4 } from "uuid";
+import { TimeSelect } from "./TimeSelect";
 
-
-// ===================== COMPONENTE PRINCIPALE =====================
 type Task = {
-  id: number;
+  id: string;
   label: string;
   value: string;
 };
 
 type RewardPunishment = {
-  type: 'reward' | 'punishment';
+  type: "reward" | "punishment";
   text: string;
 };
+type ListType = "daily" | "weekly" | "monthly";
+type ListTypeWithEmpty = ListType | "";
 
 export const TaskItem = () => {
-  const [tasks, setTasks] = useState<Task[]>([{ id: 1, label: 'Task 1', value: '' }]);
-  const [selectedOption, setSelectedOption] = useState<string>('');
+  const { user } = useAuth();
+
+  const [tasks, setTasks] = useState<Task[]>([
+    { id: uuidv4(), label: "Task 1", value: "" },
+  ]);
+  const [selectedOption, setSelectedOption] = useState<ListTypeWithEmpty>("");
+  const [selectedHour, setSelectedHour] = useState<string>("12");
   const [rewards, setRewards] = useState<RewardPunishment[]>([
-    { type: 'reward', text: '' },
-    { type: 'punishment', text: '' }
+    { type: "reward", text: "" },
+    { type: "punishment", text: "" },
   ]);
 
-  // Aggiungi nuova task
+  const hours = Array.from(
+    { length: 24 },
+    (_, i) => i.toString().padStart(2, "0") + ":00"
+  );
+
   const addTask = () => {
-    const newId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
-    setTasks([...tasks, { id: newId, label: `Task ${newId}`, value: '' }]);
+    const newTask = {
+      id: uuidv4(),
+      label: `Task ${tasks.length + 1}`,
+      value: "",
+    };
+    setTasks([...tasks, newTask]);
   };
 
-  // Rimuovi l'ultima task
   const removeLastTask = () => {
     if (tasks.length > 1) {
       setTasks(tasks.slice(0, -1));
     }
   };
 
-  // Modifica testo task
-  const handleTaskChange = (id: number, value: string) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, value } : task
-    ));
+  const handleTaskChange = (id: string, value: string) => {
+    setTasks(tasks.map((task) => (task.id === id ? { ...task, value } : task)));
   };
 
-  // Modifica premi/punizioni
   const handleRewardChange = (index: number, text: string) => {
     const newRewards = [...rewards];
     newRewards[index].text = text;
     setRewards(newRewards);
   };
 
+  const handleCreateListItem = async () => {
+    if (!user) return alert("Devi essere loggato");
+  
+    if (selectedOption === "") {
+      alert("Seleziona un tipo di lista");
+      return;
+    }
+  
+    if (!selectedHour) {
+      alert("Seleziona un orario");
+      return;
+    }
+  
+   
+   // 1. Prendi SOLO l'ora selezionata (es. "02:00" → 2)
+  const hour = parseInt(selectedHour.split(':')[0], 10);
+
+  // 2. Crea la data di scadenza in UTC SENZA conversioni
+  const expiresAt = new Date();
+  expiresAt.setUTCHours(hour, 0, 0, 0);
+  
+    // Aggiungi il periodo in base al tipo di lista
+    switch(selectedOption) {
+      case 'daily':
+        expiresAt.setDate(expiresAt.getDate() + 1);
+        break;
+      case 'weekly':
+        expiresAt.setDate(expiresAt.getDate() + 7);
+        break;
+      case 'monthly':
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
+        break;
+    }
+  
+    // Converti in formato ISO string per il DB
+    const expiresAtISO = expiresAt.toISOString();
+
+     // DEBUG: Verifica
+  console.log("Orario selezionato:", `${selectedHour}`);
+  console.log("Data inviata al DB:", expiresAtISO);
+  
+    const res = await ListItem(user.id, selectedOption, tasks, rewards, expiresAtISO);
+  
+    if (!res.success) {
+      alert(res.message);
+    } else {
+      alert(res.message);
+      resetForm();
+    }
+  };
+
+  const resetForm = () => {
+    setSelectedOption("");
+    setTasks([{ id: uuidv4(), label: "Task 1", value: "" }]);
+    setRewards([
+      { type: "reward", text: "" },
+      { type: "punishment", text: "" },
+    ]);
+  };
+
   return (
     <div className="max-w-md mx-auto p-6 bg-gray-900 rounded-lg border border-gray-700 shadow-xl">
       {/* Selezione tipo lista */}
       <div className="mb-6">
-        <select
-          value={selectedOption}
-          onChange={(e) => setSelectedOption(e.target.value)}
-          className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-white"
-        >
-          <option value="">Seleziona tipo lista</option>
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
+        <div className="grid grid-cols-2 gap-4">
+          {/* Selezione tipo lista */}
+          <div className="relative">
+            <label className="block text-md font-medium text-pink-300 mb-1">
+              Tipo lista:
+            </label>
+            <select
+              value={selectedOption}
+              onChange={(e) =>
+                setSelectedOption(e.target.value as ListTypeWithEmpty)
+              }
+              className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-pink-300"
+            >
+              <option value="">Seleziona tipo</option>
+              <option value="daily">Giornaliera</option>
+              <option value="weekly">Settimanale</option>
+              <option value="monthly">Mensile</option>
+            </select>
+          </div>
+
+          {/* Selezione orario */}
+          <div className="relative">
+            <TimeSelect
+              selectedHour={selectedHour}
+              setSelectedHour={setSelectedHour}
+              hours={hours}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Lista Task */}
@@ -78,7 +169,7 @@ export const TaskItem = () => {
               transition={{ duration: 0.2 }}
               className="space-y-2"
             >
-              <label className="block text-sm font-medium text-pink-300">
+              <label className="block text-md font-medium text-pink-300">
                 {task.label}
               </label>
               <input
@@ -100,18 +191,20 @@ export const TaskItem = () => {
             key={index}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={`p-4 rounded-lg border ${item.type === 'reward' 
-              ? 'bg-green-900/20 border-green-700' 
-              : 'bg-red-900/20 border-red-700'}`}
+            className={`p-4 rounded-lg border ${
+              item.type === "reward"
+                ? "bg-green-900/20 border-green-700"
+                : "bg-red-900/20 border-red-700"
+            }`}
           >
             <div className="flex items-center mb-2">
-              {item.type === 'reward' ? (
+              {item.type === "reward" ? (
                 <GiftIcon className="w-5 h-5 mr-2 text-green-400" />
               ) : (
                 <SkullIcon className="w-5 h-5 mr-2 text-red-400" />
               )}
-              <span className="font-medium text-white">
-                {item.type === 'reward' ? 'Premio' : 'Punizione'}
+              <span className="font-medium text-pink-300">
+                {item.type === "reward" ? "Premio" : "Punizione"}
               </span>
             </div>
             <input
@@ -119,7 +212,11 @@ export const TaskItem = () => {
               value={item.text}
               onChange={(e) => handleRewardChange(index, e.target.value)}
               className="w-full p-2 bg-gray-800 border border-gray-600 rounded focus:outline-none focus:ring-1 text-white"
-              placeholder={item.type === 'reward' ? 'Es: Pizza stasera!' : 'Es: Niente social!'}
+              placeholder={
+                item.type === "reward"
+                  ? "Es: Pizza stasera!"
+                  : "Es: Niente social!"
+              }
             />
           </motion.div>
         ))}
@@ -144,7 +241,10 @@ export const TaskItem = () => {
             Rimuovi Ultima
           </button>
 
-          <button className="flex-1 py-2 px-4 bg-pink-700 hover:bg-pink-600 text-white rounded-lg transition-all">
+          <button
+            onClick={handleCreateListItem}
+            className="flex-1 py-2 px-4 bg-pink-700 hover:bg-pink-600 text-white rounded-lg transition-all"
+          >
             Salva Lista
           </button>
         </div>

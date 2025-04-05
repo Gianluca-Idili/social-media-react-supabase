@@ -14,7 +14,7 @@ export const CreateListButton = () => {
         className="text-center"
       >
         <h3 className="text-2xl md:text-3xl font-medium bg-gradient-to-r from-pink-400 to-purple-500 bg-clip-text text-transparent mb-6">
-          Crea la tua prima lista
+          Crea Ora La Tua Lista !
         </h3>
 
         <Link 

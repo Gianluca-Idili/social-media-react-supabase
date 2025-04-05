@@ -36,3 +36,7 @@
   opacity: 1;
   transform: translateY(0);
 }
+
+select {
+  max-width: 100vw; /* Non supera la larghezza dello schermo */
+}
