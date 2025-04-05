@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase-client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { TaskItem } from "./TaskItem";
 import { ProfileItem } from "./ProfileItem";
+import { CreateListButton } from "./CreateListButton";
 
 export interface Profile {
   id: string; // Modificato da number a string (UUID)
@@ -146,7 +146,7 @@ export const ProfileDetail = ({ profileId }: Props) => {
             />
           </div>
           <div>
-            <TaskItem />
+            <CreateListButton />
           </div>
         </>
       )}

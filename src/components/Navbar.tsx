@@ -32,29 +32,15 @@ export const Navbar = () => {
             </Link>
 
             <Link
-              to={`/${user ? "create" : ""}`}
-              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
-              onClick={() => setMenuOpen(false)}
-            >
-              {user ? "Create Post" : "Log In for Create Post"}
-            </Link>
-            <Link
               to="/communities"
               className="text-gray-300 hover:text-white transition-colors"
             >
               Communities
             </Link>
-            <Link
-              to={`/${user ? "community/create" : ""}`}
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              {user ? "Create Community" : "Log In for Create Community"}
-            </Link>
 
             <Link
               to={`/profile/${user?.id}`}
               onClick={(e) => {
-                console.log("Navigating to profile of user:", user?.id); // DEBUG
                 if (!user) {
                   e.preventDefault();
                   signInWithGitHub();
@@ -183,25 +169,11 @@ export const Navbar = () => {
             </Link>
 
             <Link
-              to={`/${user ? "create" : ""}`}
-              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
-              onClick={() => setMenuOpen(false)}
-            >
-              {user ? "Create Post" : "Log In for Create Post"}
-            </Link>
-            <Link
               to="/communities"
               className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               onClick={() => setMenuOpen(false)}
             >
               Communities
-            </Link>
-            <Link
-              to={`/${user ? "community/create" : ""}`}
-              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
-              onClick={() => setMenuOpen(false)}
-            >
-              {user ? "Create Community" : "Log In for Create Community"}
             </Link>
 
             {/* Auth Buttons */}

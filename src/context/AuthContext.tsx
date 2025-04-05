@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               // No profile found → create one
               await supabase.from("profiles").insert({
                 id: user.id,
-                email: user.email,
+                email: user.email || "",
                 username: user.user_metadata?.user_name || "",
               });
             }

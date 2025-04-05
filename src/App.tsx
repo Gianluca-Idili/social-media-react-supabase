@@ -4,9 +4,10 @@ import { Navbar } from './components/Navbar';
 import { CreatePostPage } from './pages/CreatePostPage';
 import { PostPage } from './pages/PostPage';
 import { CreateCommunityPage } from './pages/CreateCommunityPage';
-import { CommunitiesPage } from './pages/CommunitiesPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { ProfilePage } from './pages/ProfilePage';
+import CommunitiesPage from './pages/CommunitiesPage';
+import { CreateListPage } from './pages/CreateListPage';
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/communities" element={<CommunitiesPage />} />
         <Route path="/community/:id" element={<CommunityPage />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
+        <Route path="/list/create" element={<CreateListPage />} />
       </Routes>
     </div>
   </div>
