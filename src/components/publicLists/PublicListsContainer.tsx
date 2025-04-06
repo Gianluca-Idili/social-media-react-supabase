@@ -71,7 +71,7 @@ export const PublicListsContainer = () => {
 
   if (isLoading) return <div> loading....</div>;
 
-  if (error) return <div>Error: {error.message}</div>;
+  if (error) return <div>Error: </div>;
 
   if (!data || data.length === 0) {
     return (
