@@ -4,6 +4,7 @@ import { Instructions } from "./Instructions";
 interface ProfileProps {
   username: string;
   email: string;
+  points: number;
   createdAt: string;
   onEdit: () => void;
 }
@@ -11,6 +12,7 @@ interface ProfileProps {
 export const ProfileItem = ({
   username,
   email,
+  points,
   createdAt,
   onEdit,
 }: ProfileProps) => {
@@ -56,7 +58,7 @@ export const ProfileItem = ({
                 Punteggio:
               </label>
               <div className="p-3 bg-gray-900 rounded-lg border border-gray-700 text-white">
-                1356
+                {points}
               </div>
             </div>
 

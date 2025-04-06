@@ -8,7 +8,7 @@ interface ProfileFormProps {
     username: string;
     email: string;
   };
-  onSuccess: () => void; // Modificato da onCancel a onSuccess
+  onSuccess: () => void;
 }
 
 export const ProfileForm = ({ profileId, initialData, onSuccess }: ProfileFormProps) => {
@@ -22,15 +22,13 @@ export const ProfileForm = ({ profileId, initialData, onSuccess }: ProfileFormPr
         .update(updatedData)
         .eq("id", profileId)
         .select()
-        .single(); // Aggiunto .select().single()
+        .single();
 
       if (error) throw new Error(error.message);
       return data;
     },
     onSuccess: (updatedData) => {
-      // 1. Aggiorna la cache con i nuovi dati
       queryClient.setQueryData(["profile", profileId], updatedData);
-      // 2. Chiudi la modalità di editing (tramite callback)
       onSuccess();
     }
   });
@@ -82,7 +80,7 @@ export const ProfileForm = ({ profileId, initialData, onSuccess }: ProfileFormPr
         </button>
         <button
           type="button"
-          onClick={onSuccess} // Usa lo stesso callback per annullare
+          onClick={onSuccess}
           className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded"
         >
           Annulla

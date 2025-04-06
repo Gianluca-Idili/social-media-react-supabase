@@ -8,6 +8,7 @@ import { CommunityPage } from './pages/CommunityPage';
 import { ProfilePage } from './pages/ProfilePage';
 import CommunitiesPage from './pages/CommunitiesPage';
 import { CreateListPage } from './pages/CreateListPage';
+import { PublicListsPage } from './pages/PublicListsPage';
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/community/:id" element={<CommunityPage />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/list/create" element={<CreateListPage />} />
+        <Route path="/lists" element={<PublicListsPage />} />
       </Routes>
     </div>
   </div>

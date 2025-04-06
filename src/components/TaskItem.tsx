@@ -4,7 +4,7 @@ import { GiftIcon, SkullIcon, TrashIcon } from "../svgs/Svgs";
 import { ListItem } from "./ListItem";
 import { useAuth } from "../context/AuthContext";
 import { v4 as uuidv4 } from "uuid";
-import { TimeSelect } from "./TimeSelect";
+import { useNavigate } from "react-router";
 
 type Task = {
   id: string;
@@ -16,26 +16,22 @@ type RewardPunishment = {
   type: "reward" | "punishment";
   text: string;
 };
+
 type ListType = "daily" | "weekly" | "monthly";
 type ListTypeWithEmpty = ListType | "";
 
 export const TaskItem = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [tasks, setTasks] = useState<Task[]>([
     { id: uuidv4(), label: "Task 1", value: "" },
   ]);
   const [selectedOption, setSelectedOption] = useState<ListTypeWithEmpty>("");
-  const [selectedHour, setSelectedHour] = useState<string>("12");
   const [rewards, setRewards] = useState<RewardPunishment[]>([
     { type: "reward", text: "" },
     { type: "punishment", text: "" },
   ]);
-
-  const hours = Array.from(
-    { length: 24 },
-    (_, i) => i.toString().padStart(2, "0") + ":00"
-  );
 
   const addTask = () => {
     const newTask = {
@@ -64,52 +60,77 @@ export const TaskItem = () => {
 
   const handleCreateListItem = async () => {
     if (!user) return alert("Devi essere loggato");
-  
-    if (selectedOption === "") {
-      alert("Seleziona un tipo di lista");
-      return;
-    }
-  
-    if (!selectedHour) {
-      alert("Seleziona un orario");
-      return;
-    }
-  
+    if (selectedOption === "") return alert("Seleziona un tipo di lista");
+
+    
+    const now = new Date();
+    const expiresAt = new Date(now);
+
+    
+    const ITALY_UTC_OFFSET = 2 * 60 * 60 * 1000; 
+    const THREE_HOURS = 3 * 60 * 60 * 1000;
+
    
-   // 1. Prendi SOLO l'ora selezionata (es. "02:00" → 2)
-  const hour = parseInt(selectedHour.split(':')[0], 10);
+  const setItalianMidnight = (date: Date) => {
+    date.setUTCHours(22, 0, 0, 0); 
+    return date;
+  };
 
-  // 2. Crea la data di scadenza in UTC SENZA conversioni
-  const expiresAt = new Date();
-  expiresAt.setUTCHours(hour, 0, 0, 0);
-  
-    // Aggiungi il periodo in base al tipo di lista
-    switch(selectedOption) {
-      case 'daily':
-        expiresAt.setDate(expiresAt.getDate() + 1);
-        break;
-      case 'weekly':
-        expiresAt.setDate(expiresAt.getDate() + 7);
-        break;
-      case 'monthly':
-        expiresAt.setMonth(expiresAt.getMonth() + 1);
-        break;
+    
+    switch (selectedOption) {
+    case "daily": {
+      setItalianMidnight(expiresAt);
+      
+      
+      if ((expiresAt.getTime() - now.getTime() + ITALY_UTC_OFFSET) < THREE_HOURS) {
+        expiresAt.setUTCDate(expiresAt.getUTCDate() + 1);
+      }
+      break;
     }
-  
-    // Converti in formato ISO string per il DB
-    const expiresAtISO = expiresAt.toISOString();
 
-     // DEBUG: Verifica
-  console.log("Orario selezionato:", `${selectedHour}`);
-  console.log("Data inviata al DB:", expiresAtISO);
-  
-    const res = await ListItem(user.id, selectedOption, tasks, rewards, expiresAtISO);
-  
-    if (!res.success) {
-      alert(res.message);
-    } else {
-      alert(res.message);
+    case "weekly": {
+      setItalianMidnight(expiresAt);
+      expiresAt.setUTCDate(expiresAt.getUTCDate() + 7);
+      
+      
+      if ((expiresAt.getTime() - now.getTime() + ITALY_UTC_OFFSET) < THREE_HOURS) {
+        expiresAt.setUTCDate(expiresAt.getUTCDate() + 7);
+      }
+      break;
+    }
+
+    case "monthly": {
+      
+      const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+      const endOfMonth = new Date(nextMonth.getTime() - 1);
+      setItalianMidnight(endOfMonth);
+      
+      
+      if ((endOfMonth.getTime() - now.getTime() + ITALY_UTC_OFFSET) < THREE_HOURS) {
+        const nextEndOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 2, 0));
+        setItalianMidnight(nextEndOfMonth);
+        expiresAt.setTime(nextEndOfMonth.getTime());
+      } else {
+        expiresAt.setTime(endOfMonth.getTime());
+      }
+      break;
+    }
+  }
+
+    const res = await ListItem(
+      user.id,
+      selectedOption,
+      tasks,
+      rewards,
+      expiresAt.toISOString()
+    );
+
+    if (res.success) {
+      alert("Lista creata con successo!");
       resetForm();
+      navigate(`/profile/${user.id}`);
+    } else {
+      alert(`Errore: ${res.message}`);
     }
   };
 
@@ -126,8 +147,7 @@ export const TaskItem = () => {
     <div className="max-w-md mx-auto p-6 bg-gray-900 rounded-lg border border-gray-700 shadow-xl">
       {/* Selezione tipo lista */}
       <div className="mb-6">
-        <div className="grid grid-cols-2 gap-4">
-          {/* Selezione tipo lista */}
+        <div className="grid grid-cols-1 gap-4">
           <div className="relative">
             <label className="block text-md font-medium text-pink-300 mb-1">
               Tipo lista:
@@ -144,15 +164,6 @@ export const TaskItem = () => {
               <option value="weekly">Settimanale</option>
               <option value="monthly">Mensile</option>
             </select>
-          </div>
-
-          {/* Selezione orario */}
-          <div className="relative">
-            <TimeSelect
-              selectedHour={selectedHour}
-              setSelectedHour={setSelectedHour}
-              hours={hours}
-            />
           </div>
         </div>
       </div>

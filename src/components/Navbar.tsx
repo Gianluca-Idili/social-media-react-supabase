@@ -32,6 +32,13 @@ export const Navbar = () => {
             </Link>
 
             <Link
+              to="/lists"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Lists
+            </Link>
+
+            <Link
               to="/communities"
               className="text-gray-300 hover:text-white transition-colors"
             >
@@ -166,6 +173,14 @@ export const Navbar = () => {
               onClick={() => setMenuOpen(false)}
             >
               Home
+            </Link>
+
+            <Link
+              to="/lists"
+              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+              onClick={() => setMenuOpen(false)}
+            >
+              Lists
             </Link>
 
             <Link

@@ -7,6 +7,7 @@ import {
   WarningIcon,
   CheckIcon,
 } from "../svgs/Svgs";
+import { useEffect, useState } from "react";
 
 interface Task {
   id: string;
@@ -34,7 +35,42 @@ interface ListCardProps {
   list: ListWithTasks;
 }
 
+const CountdownTimer = ({ targetDate }: { targetDate: string | null }) => {
+  const [timeLeft, setTimeLeft] = useState<string>("");
 
+  useEffect(() => {
+    if (!targetDate) {
+      setTimeLeft("Nessuna scadenza");
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const target = new Date(targetDate);
+      const diff = target.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeLeft("Scaduto!");
+        clearInterval(interval);
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
+  return (
+    <span className={timeLeft === "Scaduto!" ? "text-red-500" : "text-yellow-400"}>
+      {timeLeft}
+    </span>
+  );
+};
 
 export function CardList({ list }: ListCardProps) {
 
@@ -42,7 +78,7 @@ export function CardList({ list }: ListCardProps) {
   
     const handleTaskComplete = async (taskId: string, isCompleted: boolean) => {
   try {
-    // 1. Aggiorna il task su Supabase
+ 
     const { error: taskError } = await supabase
       .from('tasks')
       .update({ is_completed: isCompleted })
@@ -50,13 +86,12 @@ export function CardList({ list }: ListCardProps) {
 
     if (taskError) throw taskError;
 
-    // 2. Controlla se tutte le task sono complete
+   
     const updatedTasks = list.tasks.map(t => 
       t.id === taskId ? { ...t, is_completed: isCompleted } : t
     );
-    const allCompleted = updatedTasks.every(t => t.is_completed);
 
-    // 3. Aggiorna lo stato della lista (COMPLETAMENTE RIVISTO)
+    const allCompleted = updatedTasks.every(t => t.is_completed);
     const updates = {
       is_completed: allCompleted,
       completed_at: allCompleted ? new Date().toISOString() : null
@@ -69,7 +104,7 @@ export function CardList({ list }: ListCardProps) {
 
     if (listError) throw listError;
 
-    // 4. Ricarica i dati
+    
     await queryClient.invalidateQueries({ 
       queryKey: ['userLists', list.user_id] 
     });
@@ -142,7 +177,7 @@ export function CardList({ list }: ListCardProps) {
           </p>
           <p className={list.expires_at ? "text-pink-300" : "text-gray-400"}>
             {list.expires_at
-              ? new Date(list.expires_at).toLocaleDateString("it-IT")
+              ? <CountdownTimer targetDate={list.expires_at} />
               : "Nessuna"}
           </p>
         </div>
