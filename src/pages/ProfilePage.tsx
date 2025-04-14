@@ -1,7 +1,7 @@
 import { useParams, Navigate } from 'react-router-dom';
 import { supabase } from '../supabase-client';
 import { useEffect, useState } from 'react';
-import { ProfileDetail } from '../components/ProfileDetail';
+import { ProfileDetail } from '../components/profile/ProfileDetail';
 import { useAuth } from '../context/AuthContext';
 
 export const ProfilePage = () => {
@@ -11,15 +11,9 @@ export const ProfilePage = () => {
 
   useEffect(() => {
     const verify = async () => {
-      // Doppio controllo: sia da AuthContext che direttamente da Supabase
+      
       const currentUser = user || (await supabase.auth.getUser()).data.user;
       
-      console.log("Debug:", {
-        paramId: id,
-        authContextUserId: user?.id,
-        supabaseUserId: currentUser?.id
-      });
-
       if (currentUser?.id === id) {
         setStatus('valid');
       } else {

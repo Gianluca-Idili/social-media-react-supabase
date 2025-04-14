@@ -1,10 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { GiftIcon, SkullIcon, TrashIcon } from "../svgs/Svgs";
-import { ListItem } from "./ListItem";
-import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthContext";
+import { ListItem } from "./ListItem";
+import { GiftIcon, SkullIcon, TrashIcon } from "../../svgs/Svgs";
+import { toast } from "react-toastify";
 
 type Task = {
   id: string;
@@ -20,9 +21,47 @@ type RewardPunishment = {
 type ListType = "daily" | "weekly" | "monthly";
 type ListTypeWithEmpty = ListType | "";
 
+const getInitialTasks = (listType: ListTypeWithEmpty): Task[] => {
+  switch(listType) {
+    case "daily":
+      return [
+        { id: uuidv4(), label: "Task 1", value: "" },
+        { id: uuidv4(), label: "Task 2", value: "" },
+        { id: uuidv4(), label: "Task 3", value: "" },
+        { id: uuidv4(), label: "Task 4", value: "" }
+      ];
+    case "weekly":
+      return [
+        { id: uuidv4(), label: "Task 1", value: "" },
+        { id: uuidv4(), label: "Task 2", value: "" },
+        { id: uuidv4(), label: "Task 3", value: "" },
+        { id: uuidv4(), label: "Task 4", value: "" },
+        { id: uuidv4(), label: "Task 5", value: "" },
+        { id: uuidv4(), label: "Task 6", value: "" },
+        { id: uuidv4(), label: "Task 7", value: "" }
+      ];
+    case "monthly":
+      return [
+        { id: uuidv4(), label: "Task 1", value: "" },
+        { id: uuidv4(), label: "Task 2", value: "" },
+        { id: uuidv4(), label: "Task 3", value: "" },
+        { id: uuidv4(), label: "Task 4", value: "" },
+        { id: uuidv4(), label: "Task 5", value: "" },
+        { id: uuidv4(), label: "Task 6", value: "" },
+        { id: uuidv4(), label: "Task 7", value: "" },
+        { id: uuidv4(), label: "Task 8", value: "" },
+        { id: uuidv4(), label: "Task 9", value: "" },
+        { id: uuidv4(), label: "Task 10", value: "" }
+      ];
+    default:
+      return [{ id: uuidv4(), label: "Task 1", value: "" }];
+  }
+};
+
 export const TaskItem = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+
 
   const [tasks, setTasks] = useState<Task[]>([
     { id: uuidv4(), label: "Task 1", value: "" },
@@ -33,6 +72,10 @@ export const TaskItem = () => {
     { type: "punishment", text: "" },
   ]);
 
+  useEffect(() => {
+    setTasks(getInitialTasks(selectedOption));
+  }, [selectedOption]);
+  
   const addTask = () => {
     const newTask = {
       id: uuidv4(),
@@ -126,11 +169,12 @@ export const TaskItem = () => {
     );
 
     if (res.success) {
-      alert("Lista creata con successo!");
       resetForm();
-      navigate(`/profile/${user.id}`);
+      navigate(`/profile/${user.id}`, {
+        state: { showToast: true}
+      });
     } else {
-      alert(`Errore: ${res.message}`);
+      toast.error(`Errore: ${res.message}`);
     }
   };
 

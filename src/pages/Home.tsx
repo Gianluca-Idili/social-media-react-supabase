@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { PostList } from "../components/PostList";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import { PostList } from "../components/posts/PostList";
 
 export const Home = () => {
   const { user } = useAuth();

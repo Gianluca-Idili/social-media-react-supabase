@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Comment } from "./CommentSection";
-import { useAuth } from "../context/AuthContext";
-import { supabase } from "../supabase-client";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../supabase-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Props {

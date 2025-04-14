@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { Post } from "./PostList";
-import { supabase } from "../supabase-client";
-import { LikeButton } from "./LikeButton";
+import { supabase } from "../../supabase-client";
 import { CommentSection } from "./CommentSection";
+import { Post } from "./PostList";
+import { LikeButton } from "./LikeButton";
 
 interface Props {
   postId: number;

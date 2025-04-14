@@ -1,4 +1,4 @@
-import { CreateCommunity } from "../components/CreateCommunity";
+import { CreateCommunity } from "../components/communitys/CreateCommunity";
 
 export const CreateCommunityPage = () => {
   return (

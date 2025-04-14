@@ -1,4 +1,4 @@
-import { MedalIcon, PaletteIcon, PlusIcon, ShareIcon, TrashIcon } from "../svgs/Svgs";
+import { MedalIcon, PaletteIcon, PlusIcon, ShareIcon, TrashIcon } from "../../svgs/Svgs";
 
 export const Instructions = () => {
     return (

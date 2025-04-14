@@ -1,4 +1,4 @@
-import { GearIcon } from "../svgs/Svgs";
+import { GearIcon } from "../../svgs/Svgs";
 import { Instructions } from "./Instructions";
 
 interface ProfileProps {

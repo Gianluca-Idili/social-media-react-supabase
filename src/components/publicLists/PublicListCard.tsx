@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { supabase } from "../../supabase-client";
+// import { supabase } from "../../supabase-client";
 import { EyeIcon } from "../../svgs/Svgs";
 
 interface Profile {
@@ -30,51 +30,51 @@ interface PublicListCardProps {
 
 export const PublicListCard = ({ list, userId }: PublicListCardProps) => {
   useEffect(() => {
-    const trackView = async () => {
-      try {
-        if (!userId) return;
+    // const trackView = async () => {
+    //   try {
+    //     if (!userId) return;
 
-        // 1. Controlla se è una nuova visualizzazione
-        const { count, error: countError } = await supabase
-          .from("views")
-          .select("*", { count: "exact", head: true })
-          .eq("list_id", list.id)
-          .eq("user_id", userId);
+    //     // 1. Controlla se è una nuova visualizzazione
+    //     const { count, error: countError } = await supabase
+    //       .from("views")
+    //       .select("*", { count: "exact", head: true })
+    //       .eq("list_id", list.id)
+    //       .eq("user_id", userId);
 
-        if (countError) {
-          throw new Error(`Count error: ${countError.message}`);
-        }
+    //     if (countError) {
+    //       throw new Error(`Count error: ${countError.message}`);
+    //     }
 
-        // 2. Se non trovato, registra la visualizzazione
-        if (count === 0) {
-          const { error: insertError } = await supabase.from("views").insert([
-            {
-              list_id: list.id,
-              user_id: userId,
-            },
-          ]);
+    //     // 2. Se non trovato, registra la visualizzazione
+    //     if (count === 0) {
+    //       const { error: insertError } = await supabase.from("views").insert([
+    //         {
+    //           list_id: list.id,
+    //           user_id: userId,
+    //         },
+    //       ]);
 
-          if (insertError) {
-            throw new Error(`Insert error: ${insertError.message}`);
-          }
+    //       if (insertError) {
+    //         throw new Error(`Insert error: ${insertError.message}`);
+    //       }
 
-          // 3. Aggiorna il contatore
-          const { error: updateError } = await supabase
-            .from("lists")
-            .update({ view_count: (list.view_count || 0) + 1 })
-            .eq("id", list.id);
+    //       // 3. Aggiorna il contatore
+    //       const { error: updateError } = await supabase
+    //         .from("lists")
+    //         .update({ view_count: (list.view_count || 0) + 1 })
+    //         .eq("id", list.id);
 
-          if (updateError) {
-            throw new Error(`Update error: ${updateError.message}`);
-          }
-        }
-      } catch (error) {
-        console.error("Error tracking view:", error);
-        // Qui potresti aggiungere un toast o altro sistema di notifica errori
-      }
-    };
+    //       if (updateError) {
+    //         throw new Error(`Update error: ${updateError.message}`);
+    //       }
+    //     }
+    //   } catch (error) {
+    //     console.error("Error tracking view:", error);
+    //     // Qui potresti aggiungere un toast o altro sistema di notifica errori
+    //   }
+    // };
 
-    trackView();
+    // trackView();
   }, [list.id, userId, list.view_count]);
 
   // Gestione valori null/undefined

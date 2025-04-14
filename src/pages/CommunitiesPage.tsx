@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { CommunityList } from "../components/CommunityList";
+import { CommunityList } from "../components/communitys/CommunityList";
 
 export default function CommunitiesPage() {
   const { user } = useAuth();

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "../supabase-client";
 import { Link } from "react-router-dom";
+import { supabase } from "../../supabase-client";
 
 export interface Community {
   id: number;

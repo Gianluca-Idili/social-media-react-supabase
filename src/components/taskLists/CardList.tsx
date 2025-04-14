@@ -1,13 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "../supabase-client";
+import { supabase } from "../../supabase-client";
 import {
   CalendarIcon,
   ClockIcon,
   GiftIcon,
   WarningIcon,
   CheckIcon,
-} from "../svgs/Svgs";
-import { useEffect, useState } from "react";
+} from "../../svgs/Svgs";
+import { CountdownTimer } from "./CountdownTimer";
 
 interface Task {
   id: string;
@@ -35,84 +35,43 @@ interface ListCardProps {
   list: ListWithTasks;
 }
 
-const CountdownTimer = ({ targetDate }: { targetDate: string | null }) => {
-  const [timeLeft, setTimeLeft] = useState<string>("");
-
-  useEffect(() => {
-    if (!targetDate) {
-      setTimeLeft("Nessuna scadenza");
-      return;
-    }
-
-    const interval = setInterval(() => {
-      const now = new Date();
-      const target = new Date(targetDate);
-      const diff = target.getTime() - now.getTime();
-
-      if (diff <= 0) {
-        setTimeLeft("Scaduto!");
-        clearInterval(interval);
-        return;
-      }
-
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [targetDate]);
-
-  return (
-    <span className={timeLeft === "Scaduto!" ? "text-red-500" : "text-yellow-400"}>
-      {timeLeft}
-    </span>
-  );
-};
-
 export function CardList({ list }: ListCardProps) {
+  const queryClient = useQueryClient();
 
-    const queryClient = useQueryClient(); 
-  
-    const handleTaskComplete = async (taskId: string, isCompleted: boolean) => {
-  try {
- 
-    const { error: taskError } = await supabase
-      .from('tasks')
-      .update({ is_completed: isCompleted })
-      .eq('id', taskId);
+  const handleTaskComplete = async (taskId: string, isCompleted: boolean) => {
+    try {
+      const { error: taskError } = await supabase
+        .from("tasks")
+        .update({ is_completed: isCompleted })
+        .eq("id", taskId);
 
-    if (taskError) throw taskError;
+      if (taskError) throw taskError;
 
-   
-    const updatedTasks = list.tasks.map(t => 
-      t.id === taskId ? { ...t, is_completed: isCompleted } : t
-    );
+      const updatedTasks = list.tasks.map((t) =>
+        t.id === taskId ? { ...t, is_completed: isCompleted } : t
+      );
+      
 
-    const allCompleted = updatedTasks.every(t => t.is_completed);
-    const updates = {
-      is_completed: allCompleted,
-      completed_at: allCompleted ? new Date().toISOString() : null
-    };
+      const allCompleted = updatedTasks.every((t) => t.is_completed);
+      const updates = {
+        is_completed: allCompleted,
+        completed_at: allCompleted ? new Date().toISOString() : null,
+      };
+        
+      const { error: listError } = await supabase
+        .from("lists")
+        .update(updates)
+        .eq("id", list.id);
 
-    const { error: listError } = await supabase
-      .from('lists')
-      .update(updates)
-      .eq('id', list.id);
+      if (listError) throw listError;
 
-    if (listError) throw listError;
-
-    
-    await queryClient.invalidateQueries({ 
-      queryKey: ['userLists', list.user_id] 
-    });
-    
-  } catch (error) {
-    console.error("Errore durante l'aggiornamento:", error);
-  }
-};
+      await queryClient.invalidateQueries({
+        queryKey: ["userLists", list.user_id],
+      });
+    } catch (error) {
+      console.error("Errore durante l'aggiornamento:", error);
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gray-900 rounded-xl shadow-lg border border-gray-800 mb-6">
@@ -176,9 +135,11 @@ export function CardList({ list }: ListCardProps) {
             <span>Scadenza:</span>
           </p>
           <p className={list.expires_at ? "text-pink-300" : "text-gray-400"}>
-            {list.expires_at
-              ? <CountdownTimer targetDate={list.expires_at} />
-              : "Nessuna"}
+            {list.expires_at ? (
+              <CountdownTimer targetDate={list.expires_at} />
+            ) : (
+              "Nessuna"
+            )}
           </p>
         </div>
 
@@ -211,18 +172,24 @@ export function CardList({ list }: ListCardProps) {
       {/* Lista Task */}
       <div className="space-y-3">
         {list.tasks.map((task) => (
-         <div 
-         key={task.id} 
-         className={`flex items-start p-3 rounded-lg border ${
-           task.is_completed ? 'border-green-900 bg-gray-800' : 'border-gray-700 bg-gray-800'
-         } cursor-pointer transition-colors hover:bg-gray-750`}
-         onClick={() => handleTaskComplete(task.id, !task.is_completed)}
-       >
-         <div className={`mt-0.5 mr-3 p-1 rounded-full ${
-           task.is_completed ? 'bg-green-500 text-white' : 'border border-gray-500'
-         }`}>
-           <CheckIcon className="w-3 h-3" />
-         </div>
+          <div
+            key={task.id}
+            className={`flex items-start p-3 rounded-lg border ${
+              task.is_completed
+                ? "border-green-900 bg-gray-800"
+                : "border-gray-700 bg-gray-800"
+            } cursor-pointer transition-colors hover:bg-gray-750`}
+            onClick={() => handleTaskComplete(task.id, !task.is_completed)}
+          >
+            <div
+              className={`mt-0.5 mr-3 p-1 rounded-full ${
+                task.is_completed
+                  ? "bg-green-500 text-white"
+                  : "border border-gray-500"
+              }`}
+            >
+              <CheckIcon className="w-3 h-3" />
+            </div>
             <div className="flex-1">
               <span
                 className={`block ${

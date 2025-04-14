@@ -40,3 +40,24 @@
 select {
   max-width: 100vw; /* Non supera la larghezza dello schermo */
 }
+
+/* Sfondo nero per tutti i toast */
+.Toastify__toast {
+  background-color: black !important;
+}
+
+.Toastify__progress-bar {
+  background: linear-gradient(to right, #8b5cf6, #ec4899) !important;
+}
+
+
+.Toastify__toast--success {
+  background-color: #222 !important; 
+}
+.gradient-text {
+  background: linear-gradient(to right,  #eb5deb,#a782fd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}

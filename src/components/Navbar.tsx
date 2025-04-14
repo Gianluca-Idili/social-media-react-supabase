@@ -71,7 +71,9 @@ export const Navbar = () => {
                 )}
                 <span className="text-gray-300">{displayName}</span>
                 <button
-                  onClick={signOut}
+                  onClick={async () => {
+                    await signOut(); 
+                  }}
                   className="bg-red-500 px-3 py-1 rounded"
                 >
                   Sign Out
@@ -206,9 +208,10 @@ export const Navbar = () => {
               ) : (
                 <>
                   <button
-                    onClick={() => {
-                      signInWithGitHub();
-                      setMenuOpen(false);
+                    onClick={async () => {
+                     
+                        await signOut();
+                        setMenuOpen(false); 
                     }}
                     className="w-full text-left px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 flex items-center"
                   >

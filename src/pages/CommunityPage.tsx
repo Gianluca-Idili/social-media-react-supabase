@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { CommunityDisplay } from "../components/CommunityDisplay";
+import { CommunityDisplay } from "../components/communitys/CommunityDisplay";
 
 export const CommunityPage = () => {
   const {id} = useParams<{id: string}>()

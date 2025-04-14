@@ -1,8 +1,8 @@
 import React, { ChangeEvent, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { supabase } from "../supabase-client";
-import { useAuth } from "../context/AuthContext";
-import { Community, fetchCommunities } from "./CommunityList";
+import { supabase } from "../../supabase-client";
+import { useAuth } from "../../context/AuthContext";
+import { Community, fetchCommunities } from "../communitys/CommunityList";
 import { useNavigate } from "react-router-dom";
 
 interface PostInput {
