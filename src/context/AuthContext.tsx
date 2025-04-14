@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 interface AuthContextType {
   user: User | null;
   signInWithGitHub: () => Promise<void>;
-  signOut: () => Promise<void>; // Modificato per ritornare Promise
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,42 +15,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Controlla lo stato di autenticazione iniziale
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // 1. Controlla lo stato iniziale
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user ?? null;
       setUser(user);
-  
-      if (user) {
-        // Check if profile exists
-        const { error } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("id", user.id)
-          .single();
-  
-        if (error && error.code === "PGRST116") {
-          // No profile found → create one
-          await supabase.from("profiles").insert({
-            id: user.id,
-            email: user.email || "",
-            username: user.user_metadata?.user_name || "",
-          });
-        }
-      }
-    });
 
-    // Aggiungi listener per i cambiamenti di autenticazione
-    const { data: authListener } = supabase.auth.onAuthStateChange(
+      if (user) {
+        await handleProfileCreation(user);
+      }
+    };
+
+    // 2. Listener per cambiamenti in tempo reale
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
+        
+        // Forza cleanup completo su logout
+        if (event === 'SIGNED_OUT') {
+          clearAuthState();
+        }
       }
     );
 
+    initializeAuth();
+
     return () => {
-      authListener?.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
+
+  const handleProfileCreation = async (user: User) => {
+    const { error } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .single();
+
+    if (error?.code === "PGRST116") {
+      await supabase.from("profiles").insert({
+        id: user.id,
+        email: user.email || "",
+        username: user.user_metadata?.user_name || "",
+      });
+    }
+  };
+
+  const clearAuthState = () => {
+    // Pulisci cache e storage
+    localStorage.removeItem('sb-auth-token');
+    sessionStorage.clear();
+  };
 
   const signInWithGitHub = async () => {
     try {
@@ -59,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       if (error) throw error;
     } catch (error) {
-      toast.error("Errore durante il login con GitHub");
+      toast.error("Login failed");
       console.error(error);
     }
   };
@@ -69,10 +85,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Forza il refresh della pagina dopo il logout
-      window.location.reload();
+      clearAuthState();
+      
+      // Soluzione ibrida per Vercel
+      window.location.href = '/?logout=' + Date.now();
     } catch (error) {
-      toast.error("Errore durante il logout");
+      toast.error("Logout failed");
       console.error(error);
     }
   };
@@ -84,10 +102,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within the AuthProvider");
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 };

@@ -54,7 +54,7 @@ const getInitialTasks = (listType: ListTypeWithEmpty): Task[] => {
         { id: uuidv4(), label: "Task 10", value: "" }
       ];
     default:
-      return [{ id: uuidv4(), label: "Task 1", value: "" }];
+      return [];
   }
 };
 
