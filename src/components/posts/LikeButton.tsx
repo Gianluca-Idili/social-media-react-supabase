@@ -1,23 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase-client";
 import { useAuth } from "../../context/AuthContext";
+import { FakeIcon, RealIcon,  } from "../../svgs/Svgs";
 
 interface Props {
-  postId: number;
+  listId: string;
 }
 
 interface Vote {
   id: number;
-  post_id: number;
+  list_id: string;
   user_id: string;
   vote: number;
 }
 
-const vote = async (voteValue: number, postId: number, userId: string) => {
+const vote = async (voteValue: number, listId: string, userId: string) => {
   const { data: existingVote } = await supabase
     .from("votes")
     .select("*")
-    .eq("post_id", postId)
+    .eq("list_id", listId)
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -41,22 +42,22 @@ const vote = async (voteValue: number, postId: number, userId: string) => {
   } else {
     const { error } = await supabase
       .from("votes")
-      .insert({ post_id: postId, user_id: userId, vote: voteValue });
+      .insert({ list_id: listId, user_id: userId, vote: voteValue });
     if (error) throw new Error(error.message);
   }
 };
 
-const fetchVotes = async (postId: number): Promise<Vote[]> => {
+const fetchVotes = async (listId: string): Promise<Vote[]> => {
   const { data, error } = await supabase
     .from("votes")
     .select("*")
-    .eq("post_id", postId);
+    .eq("list_id", listId);
 
   if (error) throw new Error(error.message);
   return data as Vote[];
 };
 
-export const LikeButton = ({ postId }: Props) => {
+export const LikeButton = ({ listId }: Props) => {
   const { user } = useAuth();
 
   const queryClient = useQueryClient();
@@ -66,18 +67,18 @@ export const LikeButton = ({ postId }: Props) => {
     isLoading,
     error,
   } = useQuery<Vote[], Error>({
-    queryKey: ["votes", postId],
-    queryFn: () => fetchVotes(postId),
+    queryKey: ["votes", listId],
+    queryFn: () => fetchVotes(listId),
   });
 
   const { mutate } = useMutation({
     mutationFn: (voteValue: number) => {
       if (!user) throw new Error("You must be logged in to Vote!");
-      return vote(voteValue, postId, user.id);
+      return vote(voteValue, listId, user.id);
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["votes", postId] });
+      queryClient.invalidateQueries({ queryKey: ["votes", listId] });
     },
   });
 
@@ -97,19 +98,25 @@ export const LikeButton = ({ postId }: Props) => {
     <div className="flex items-center space-x-4 my-4">
       <button
         onClick={() => mutate(1)}
-        className={`px-3 py-1 cursor-pointer rounded transition-colors duration-150 ${
-          userVote === 1 ? "bg-green-500 text-white" : "bg-gray-200 text-black"
+        className={`flex items-center px-4 py-2 rounded-lg transition-all duration-200 font-medium ${
+          userVote === 1
+            ? "bg-gradient-to-r from-green-600 to-emerald-500 text-white shadow-lg shadow-green-500/20"
+            : "bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700"
         }`}
       >
-        👍 {likes}
+        <RealIcon className="w-5 h-5 mr-2" />
+        Real {likes}
       </button>
       <button
         onClick={() => mutate(-1)}
-        className={`px-3 py-1 cursor-pointer rounded transition-colors duration-150 ${
-          userVote === -1 ? "bg-red-500 text-white" : "bg-gray-200 text-black"
+        className={`flex items-center px-4 py-2 rounded-lg transition-all duration-200 font-medium ${
+          userVote === -1
+            ? "bg-gradient-to-r from-pink-600 to-rose-500 text-white shadow-lg shadow-pink-500/20"
+            : "bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700"
         }`}
       >
-        👎 {dislikes}
+        <FakeIcon className="w-5 h-5 mr-2" />
+        Fake {dislikes}
       </button>
     </div>
   );

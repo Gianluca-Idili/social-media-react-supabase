@@ -30,6 +30,12 @@ export const Navbar = () => {
             >
               Home
             </Link>
+            <Link
+              to="/leaderboard"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Leaderboard
+            </Link>
 
             <Link
               to="/lists"
@@ -175,6 +181,13 @@ export const Navbar = () => {
               onClick={() => setMenuOpen(false)}
             >
               Home
+            </Link>
+            <Link
+              to="/leaderboard"
+              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+              onClick={() => setMenuOpen(false)}
+            >
+              Leaderboard
             </Link>
 
             <Link

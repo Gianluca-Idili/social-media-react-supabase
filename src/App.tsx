@@ -9,6 +9,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import CommunitiesPage from './pages/CommunitiesPage';
 import { CreateListPage } from './pages/CreateListPage';
 import { PublicListsPage } from './pages/PublicListsPage';
+import { LeaderboardPage } from './pages/LeaderboardPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/list/create" element={<CreateListPage />} />
         <Route path="/lists" element={<PublicListsPage />} />
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
       </Routes>
       <ToastContainer
         
