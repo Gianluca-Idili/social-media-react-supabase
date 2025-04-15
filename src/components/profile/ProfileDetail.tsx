@@ -103,7 +103,7 @@ const fetchListsWithTasks = async (userId: string) => {
 
 export const ProfileDetail = ({ profileId }: Props) => {
   const location = useLocation();
-  
+
   const [hiddenLists, setHiddenLists] = useState<string[]>([]);
 
   const queryClient = useQueryClient();
@@ -114,9 +114,10 @@ export const ProfileDetail = ({ profileId }: Props) => {
   useEffect(() => {
     if (location.state?.showToast) {
       if (!toastId.current || !toast.isActive(toastId.current)) {
-        toastId.current = toast.success( 
-          <span className="gradient-text">Lista creata con successo!</span>);
-        window.history.replaceState({}, '');
+        toastId.current = toast.success(
+          <span className="gradient-text">Lista creata con successo!</span>
+        );
+        window.history.replaceState({}, "");
       }
     }
   }, [location.state]);
@@ -188,7 +189,10 @@ export const ProfileDetail = ({ profileId }: Props) => {
             .eq("id", profileId)
         );
         toast.success(
-        <span className="gradient-text">Lista completata è Pubblica! <br/> + {pointsToAdd} punti !</span>);
+          <span className="gradient-text">
+            Lista completata è Pubblica! <br /> + {pointsToAdd} punti !
+          </span>
+        );
       }
 
       const results = await Promise.all(updates);
@@ -224,7 +228,9 @@ export const ProfileDetail = ({ profileId }: Props) => {
 
       if (error) throw error;
       toast.success(
-        <span className="gradient-text">Lista completata è Nascosta! <br/> + {pointsToAdd} punti !</span>
+        <span className="gradient-text">
+          Lista completata è Nascosta! <br /> + {pointsToAdd} punti !
+        </span>
       );
       setHiddenLists((prev) => [...prev, listId]);
       await queryClient.invalidateQueries({ queryKey: ["profile", profileId] });
@@ -233,9 +239,6 @@ export const ProfileDetail = ({ profileId }: Props) => {
     }
   };
 
-  // Filtriamo le liste per mostrare solo:
-  // 1. Liste non completate/non scadute
-  // 2. Liste completate/scadute ma non ancora gestite (non nascoste e non pubbliche)
   const filteredLists =
     lists?.filter(
       (list) =>

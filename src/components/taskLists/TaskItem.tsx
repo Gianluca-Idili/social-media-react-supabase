@@ -1,5 +1,5 @@
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
@@ -7,65 +7,25 @@ import { ListItem } from "./ListItem";
 import { GiftIcon, SkullIcon, TrashIcon } from "../../svgs/Svgs";
 import { toast } from "react-toastify";
 
-type Task = {
-  id: string;
-  label: string;
-  value: string;
-};
-
-type RewardPunishment = {
-  type: "reward" | "punishment";
-  text: string;
-};
-
-type ListType = "daily" | "weekly" | "monthly";
-type ListTypeWithEmpty = ListType | "";
-
-const getInitialTasks = (listType: ListTypeWithEmpty): Task[] => {
-  switch(listType) {
-    case "daily":
-      return [
-        { id: uuidv4(), label: "Task 1", value: "" },
-        { id: uuidv4(), label: "Task 2", value: "" },
-        { id: uuidv4(), label: "Task 3", value: "" },
-        { id: uuidv4(), label: "Task 4", value: "" }
-      ];
-    case "weekly":
-      return [
-        { id: uuidv4(), label: "Task 1", value: "" },
-        { id: uuidv4(), label: "Task 2", value: "" },
-        { id: uuidv4(), label: "Task 3", value: "" },
-        { id: uuidv4(), label: "Task 4", value: "" },
-        { id: uuidv4(), label: "Task 5", value: "" },
-        { id: uuidv4(), label: "Task 6", value: "" },
-        { id: uuidv4(), label: "Task 7", value: "" }
-      ];
-    case "monthly":
-      return [
-        { id: uuidv4(), label: "Task 1", value: "" },
-        { id: uuidv4(), label: "Task 2", value: "" },
-        { id: uuidv4(), label: "Task 3", value: "" },
-        { id: uuidv4(), label: "Task 4", value: "" },
-        { id: uuidv4(), label: "Task 5", value: "" },
-        { id: uuidv4(), label: "Task 6", value: "" },
-        { id: uuidv4(), label: "Task 7", value: "" },
-        { id: uuidv4(), label: "Task 8", value: "" },
-        { id: uuidv4(), label: "Task 9", value: "" },
-        { id: uuidv4(), label: "Task 10", value: "" }
-      ];
-    default:
-      return [];
-  }
-};
+// Utils e Types
+import {
+  getInitialTasks,
+  getMinTasks,
+  calculateExpirationDate,
+  checkListLimit,
+} from "../../utils/listHelpers";
+import {
+  ListType,
+  ListTypeWithEmpty,
+  Task,
+  RewardPunishment,
+} from "../../types/listTypes";
 
 export const TaskItem = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: uuidv4(), label: "Task 1", value: "" },
-  ]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedOption, setSelectedOption] = useState<ListTypeWithEmpty>("");
   const [rewards, setRewards] = useState<RewardPunishment[]>([
     { type: "reward", text: "" },
@@ -75,7 +35,7 @@ export const TaskItem = () => {
   useEffect(() => {
     setTasks(getInitialTasks(selectedOption));
   }, [selectedOption]);
-  
+
   const addTask = () => {
     const newTask = {
       id: uuidv4(),
@@ -86,8 +46,13 @@ export const TaskItem = () => {
   };
 
   const removeLastTask = () => {
-    if (tasks.length > 1) {
+    const minTasks = getMinTasks(selectedOption);
+    if (tasks.length > minTasks) {
       setTasks(tasks.slice(0, -1));
+    } else {
+      toast.warning(
+        `Non puoi avere meno di ${minTasks} task per una lista ${selectedOption}`
+      );
     }
   };
 
@@ -102,64 +67,20 @@ export const TaskItem = () => {
   };
 
   const handleCreateListItem = async () => {
-    if (!user) return alert("Devi essere loggato");
-    if (selectedOption === "") return alert("Seleziona un tipo di lista");
+    if (!user) return toast.error("Devi essere loggato");
+    if (!selectedOption) return toast.error("Seleziona un tipo di lista");
 
-    
-    const now = new Date();
-    const expiresAt = new Date(now);
-
-    
-    const ITALY_UTC_OFFSET = 2 * 60 * 60 * 1000; 
-    const THREE_HOURS = 3 * 60 * 60 * 1000;
-
-   
-  const setItalianMidnight = (date: Date) => {
-    date.setUTCHours(22, 0, 0, 0); 
-    return date;
-  };
-
-    
-    switch (selectedOption) {
-    case "daily": {
-      setItalianMidnight(expiresAt);
-      
-      
-      if ((expiresAt.getTime() - now.getTime() + ITALY_UTC_OFFSET) < THREE_HOURS) {
-        expiresAt.setUTCDate(expiresAt.getUTCDate() + 1);
-      }
-      break;
+    const canCreate = await checkListLimit(user.id, selectedOption as ListType);
+    if (!canCreate) {
+      const messages = {
+        daily: "Hai già creato 2 liste giornaliere oggi",
+        weekly: "Hai già creato una lista settimanale questa settimana",
+        monthly: "Hai già creato una lista mensile questo mese",
+      };
+      return toast.error(messages[selectedOption]);
     }
 
-    case "weekly": {
-      setItalianMidnight(expiresAt);
-      expiresAt.setUTCDate(expiresAt.getUTCDate() + 7);
-      
-      
-      if ((expiresAt.getTime() - now.getTime() + ITALY_UTC_OFFSET) < THREE_HOURS) {
-        expiresAt.setUTCDate(expiresAt.getUTCDate() + 7);
-      }
-      break;
-    }
-
-    case "monthly": {
-      
-      const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-      const endOfMonth = new Date(nextMonth.getTime() - 1);
-      setItalianMidnight(endOfMonth);
-      
-      
-      if ((endOfMonth.getTime() - now.getTime() + ITALY_UTC_OFFSET) < THREE_HOURS) {
-        const nextEndOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 2, 0));
-        setItalianMidnight(nextEndOfMonth);
-        expiresAt.setTime(nextEndOfMonth.getTime());
-      } else {
-        expiresAt.setTime(endOfMonth.getTime());
-      }
-      break;
-    }
-  }
-
+    const expiresAt = calculateExpirationDate(selectedOption);
     const res = await ListItem(
       user.id,
       selectedOption,
@@ -170,9 +91,7 @@ export const TaskItem = () => {
 
     if (res.success) {
       resetForm();
-      navigate(`/profile/${user.id}`, {
-        state: { showToast: true}
-      });
+      navigate(`/profile/${user.id}`, { state: { showToast: true } });
     } else {
       toast.error(`Errore: ${res.message}`);
     }
@@ -289,7 +208,7 @@ export const TaskItem = () => {
         <div className="flex space-x-3">
           <button
             onClick={removeLastTask}
-            disabled={tasks.length <= 1}
+            disabled={tasks.length <= getMinTasks(selectedOption)}
             className="flex-1 flex items-center justify-center py-2 px-4 bg-gray-800 border border-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-all"
           >
             <TrashIcon className="w-4 h-4 mr-2" />
