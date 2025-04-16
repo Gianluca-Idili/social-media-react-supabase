@@ -19,7 +19,7 @@ export const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="font-mono text-xl font-bold text-white">
-            forum<span className="text-purple-500">.app</span>
+            Task<span className="text-purple-500">.level</span>
           </Link>
 
           {/* Desktop Links */}
@@ -30,12 +30,6 @@ export const Navbar = () => {
             >
               Home
             </Link>
-            <Link
-              to="/leaderboard"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Leaderboard
-            </Link>
 
             <Link
               to="/lists"
@@ -45,10 +39,10 @@ export const Navbar = () => {
             </Link>
 
             <Link
-              to="/communities"
+              to="/leaderboard"
               className="text-gray-300 hover:text-white transition-colors"
             >
-              Communities
+              Leaderboard
             </Link>
 
             <Link
@@ -182,13 +176,6 @@ export const Navbar = () => {
             >
               Home
             </Link>
-            <Link
-              to="/leaderboard"
-              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
-              onClick={() => setMenuOpen(false)}
-            >
-              Leaderboard
-            </Link>
 
             <Link
               to="/lists"
@@ -199,11 +186,11 @@ export const Navbar = () => {
             </Link>
 
             <Link
-              to="/communities"
+              to="/leaderboard"
               className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               onClick={() => setMenuOpen(false)}
             >
-              Communities
+              Leaderboard
             </Link>
 
             {/* Auth Buttons */}

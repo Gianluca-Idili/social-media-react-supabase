@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase-client";
 import { useAuth } from "../../context/AuthContext";
-import { FakeIcon, RealIcon,  } from "../../svgs/Svgs";
+import { FakeIcon, RealIcon } from "../../svgs/Svgs";
 
 interface Props {
   listId: string;
@@ -9,7 +9,7 @@ interface Props {
 
 interface Vote {
   id: number;
-  list_id: string;
+  list_id: number;
   user_id: string;
   vote: number;
 }

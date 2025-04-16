@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { EyeIcon } from "../../svgs/Svgs";
 import { supabase } from "../../supabase-client";
-import { LikeButton } from "../posts/LikeButton";
+import { LikeButton } from "./LikeButton";
 
 interface Profile {
   username: string;
