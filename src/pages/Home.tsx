@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../supabase-client";
 import { PublicListCard } from "../components/publicLists/PublicListCard";
-import { Carousel } from "../components/publicLists/PublicListsCarousel";
+import { Carousel } from "../components/publicLists/Carousel";
 import { PublicList } from "../components/publicLists/types";
 
 export const Home = () => {
@@ -161,10 +161,12 @@ export const Home = () => {
       </div>
 
      {/* Carousels */}
-     <div className="space-y-12">
+     <div className="space-y-6 md:space-y-12">
         {/* Most Viewed */}
         <div className="px-4 relative">
-          <h3 className="text-2xl font-bold text-gray-200 mb-6">Most Viewed</h3>
+        <h3 className="text-xl md:text-2xl font-bold text-gray-200 mb-3 md:mb-6">
+      Most Viewed
+    </h3>
           <Carousel queryKey="mostViewed" queryFn={fetchMostViewedLists} />
         </div>
 

@@ -7,6 +7,7 @@ import { PublicListsPage } from './pages/PublicListsPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { UserListsPage } from './pages/UserListsPage';
 
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/list/create" element={<CreateListPage />} />
         <Route path="/lists" element={<PublicListsPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/my-lists/:id" element={<UserListsPage />} />
       </Routes>
       <ToastContainer
         

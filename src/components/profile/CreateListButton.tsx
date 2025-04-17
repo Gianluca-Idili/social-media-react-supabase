@@ -18,7 +18,7 @@ export const CreateListButton = () => {
         </h3>
 
         <Link 
-  to={user ? "/list/create" : "#"}  // Percorso assoluto dalla root
+  to={user ? "/list/create" : "#"}  
   onClick={(e) => {
     if (!user) {
       e.preventDefault();

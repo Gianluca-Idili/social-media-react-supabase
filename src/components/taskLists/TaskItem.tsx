@@ -91,7 +91,7 @@ export const TaskItem = () => {
 
     if (res.success) {
       resetForm();
-      navigate(`/profile/${user.id}`, { state: { showToast: true } });
+      navigate(`/my-lists/${user.id}`, { state: { showToast: true } });
     } else {
       toast.error(`Errore: ${res.message}`);
     }

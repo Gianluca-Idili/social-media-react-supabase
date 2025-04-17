@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react';
-import { PublicListCard } from './PublicListCard';
-import { useAuth } from '../../context/AuthContext';
-import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
-import { PublicList } from './types';
-import { ChevronLeftIcon, ChevronRightIcon } from '../../svgs/Svgs';
+import { useRef, useState } from "react";
+import { PublicListCard } from "./PublicListCard";
+import { useAuth } from "../../context/AuthContext";
+import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { PublicList } from "./types";
+import { ChevronLeftIcon, ChevronRightIcon } from "../../svgs/Svgs";
+import { useMediaQuery } from "react-responsive";
 
 interface CarouselProps {
   queryKey: string;
@@ -12,6 +13,7 @@ interface CarouselProps {
 }
 
 export const Carousel = ({ queryKey, queryFn }: CarouselProps) => {
+  const isMobile = useMediaQuery({ maxWidth: 768 }); // Rileva mobile
   const { user } = useAuth();
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -25,18 +27,18 @@ export const Carousel = ({ queryKey, queryFn }: CarouselProps) => {
 
   const handleArrowLeft = () => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({ 
-        left: -300, 
-        behavior: 'smooth' 
+      carouselRef.current.scrollBy({
+        left: -300,
+        behavior: "smooth",
       });
     }
   };
 
   const handleArrowRight = () => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({ 
-        left: 300, 
-        behavior: 'smooth' 
+      carouselRef.current.scrollBy({
+        left: 300,
+        behavior: "smooth",
       });
     }
   };
@@ -51,7 +53,7 @@ export const Carousel = ({ queryKey, queryFn }: CarouselProps) => {
     if (!isDragging || !carouselRef.current) return;
     e.preventDefault();
     const x = e.pageX - (carouselRef.current.offsetLeft || 0);
-    const walk = (x - startX) * 1.5; // Moltiplicatore per maggiore sensibilità
+    const walk = (x - startX) * 1.5; 
     carouselRef.current.scrollLeft = scrollLeft - walk;
   };
 
@@ -80,7 +82,10 @@ export const Carousel = ({ queryKey, queryFn }: CarouselProps) => {
     return (
       <div className="flex space-x-6 overflow-x-auto py-4 scrollbar-hide">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="flex-shrink-0 w-72 h-96 bg-gray-800 rounded-xl animate-pulse" />
+          <div
+            key={i}
+            className="flex-shrink-0 w-72 h-96 bg-gray-800 rounded-xl animate-pulse"
+          />
         ))}
       </div>
     );
@@ -110,28 +115,32 @@ export const Carousel = ({ queryKey, queryFn }: CarouselProps) => {
         </button>
       </div>
 
-      {/* Carousel Container */}
-      <div
-        ref={carouselRef}
-        className={`flex space-x-6 py-4 overflow-x-auto scrollbar-hide ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-        onMouseDown={handleMouseDown}
-        onMouseLeave={handleMouseUp}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {data.map((list) => (
-          <motion.div
-            key={list.id}
-            className="flex-shrink-0 w-72"
-            whileHover={{ scale: isDragging ? 1 : 1.02 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
-          >
-            <PublicListCard list={list} userId={user?.id} />
-          </motion.div>
-        ))}
+      <div className={`relative ${isMobile ? 'scale-[0.75] origin-left w-[135%] min-h-[300px]' : ''}`}>
+        {/* Carousel Container */}
+        <div
+          ref={carouselRef}
+          className={`flex space-x-4 md:space-x-6 py-2 md:py-4 overflow-x-auto scrollbar-hide ${
+            isDragging ? "cursor-grabbing" : "cursor-grab"
+          } ${isMobile ? 'pl-4' : ''}`} 
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseUp}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {data.map((list) => (
+            <motion.div
+              key={list.id}
+              className={`flex-shrink-0 ${isMobile ? 'w-62' : 'w-92'}`} 
+              whileHover={{ scale: isDragging ? 1 : 1.02 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <PublicListCard list={list} userId={user?.id} />
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );

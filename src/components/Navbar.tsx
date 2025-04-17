@@ -24,19 +24,25 @@ export const Navbar = () => {
 
           {/* Desktop Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link
+          <Link
               to="/"
               className="text-gray-300 hover:text-white transition-colors"
             >
               Home
             </Link>
 
-            <Link
-              to="/lists"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Lists
-            </Link>
+            {user && (
+              <Link
+              to={`/my-lists/${user?.id}`}
+              onClick={(e) => {
+                if (!user) {
+                  e.preventDefault();
+                  signInWithGitHub();
+                }
+              }}>
+                  My Lists
+                </Link>
+            )}
 
             <Link
               to="/leaderboard"
@@ -45,6 +51,14 @@ export const Navbar = () => {
               Leaderboard
             </Link>
 
+            <Link
+              to="/lists"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Lists
+            </Link>
+            
+            {user && (
             <Link
               to={`/profile/${user?.id}`}
               onClick={(e) => {
@@ -56,6 +70,8 @@ export const Navbar = () => {
             >
               Profile
             </Link>
+            )}
+
           </div>
 
           {/* Desktop Auth */}
@@ -72,7 +88,7 @@ export const Navbar = () => {
                 <span className="text-gray-300">{displayName}</span>
                 <button
                   onClick={async () => {
-                    await signOut(); 
+                    await signOut();
                   }}
                   className="bg-red-500 px-3 py-1 rounded"
                 >
@@ -156,6 +172,15 @@ export const Navbar = () => {
 
             {/* Navigation Links */}
             <Link
+              to="/"
+              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+              onClick={() => setMenuOpen(false)}
+            >
+              Home
+            </Link>
+
+            {user && (
+            <Link
               className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               to={`/profile/${user?.id}`}
               onClick={(e) => {
@@ -168,13 +193,30 @@ export const Navbar = () => {
             >
               Profile
             </Link>
+            )}
+
+            {user && (
+            <Link
+              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+              to={`/my-lists/${user?.id}`}
+              onClick={(e) => {
+                if (!user) {
+                  e.preventDefault();
+                  signInWithGitHub();
+                }
+                setMenuOpen(false);
+              }}
+            >
+              My Lists
+            </Link>
+            )}
 
             <Link
-              to="/"
+              to="/leaderboard"
               className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               onClick={() => setMenuOpen(false)}
             >
-              Home
+              Leaderboard
             </Link>
 
             <Link
@@ -183,14 +225,6 @@ export const Navbar = () => {
               onClick={() => setMenuOpen(false)}
             >
               Lists
-            </Link>
-
-            <Link
-              to="/leaderboard"
-              className="block px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
-              onClick={() => setMenuOpen(false)}
-            >
-              Leaderboard
             </Link>
 
             {/* Auth Buttons */}
@@ -209,9 +243,8 @@ export const Navbar = () => {
                 <>
                   <button
                     onClick={async () => {
-                     
-                        await signOut();
-                        setMenuOpen(false); 
+                      await signOut();
+                      setMenuOpen(false);
                     }}
                     className="w-full text-left px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 flex items-center"
                   >
