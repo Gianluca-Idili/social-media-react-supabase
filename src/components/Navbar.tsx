@@ -242,8 +242,8 @@ export const Navbar = () => {
               ) : (
                 <>
                   <button
-                    onClick={async () => {
-                      await signOut();
+                    onClick={() => {
+                      signInWithGitHub();
                       setMenuOpen(false);
                     }}
                     className="w-full text-left px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 flex items-center"
