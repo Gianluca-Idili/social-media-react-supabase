@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router';
+import { Route, Routes } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Navbar } from './components/Navbar';
 import { ProfilePage } from './pages/ProfilePage';
@@ -6,8 +6,9 @@ import { CreateListPage } from './pages/CreateListPage';
 import { PublicListsPage } from './pages/PublicListsPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
 import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { UserListsPage } from './pages/UserListsPage';
+import { PublicProfilePage } from './pages/PubblicProfilePage';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/lists" element={<PublicListsPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/my-lists/:id" element={<UserListsPage />} />
+        <Route path="/detail/profile/:profileId" element={<PublicProfilePage />} />
       </Routes>
       <ToastContainer
         

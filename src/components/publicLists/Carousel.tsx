@@ -115,7 +115,7 @@ export const Carousel = ({ queryKey, queryFn }: CarouselProps) => {
         </button>
       </div>
 
-      <div className={`relative ${isMobile ? 'scale-[0.75] origin-left w-[135%] min-h-[300px]' : ''}`}>
+      <div className={`relative ${isMobile ? 'scale-75 origin-left w-[140%]' : ''}`}>
         {/* Carousel Container */}
         <div
           ref={carouselRef}

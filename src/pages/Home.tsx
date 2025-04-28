@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+// import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../supabase-client";
-import { PublicListCard } from "../components/publicLists/PublicListCard";
+// import { PublicListCard } from "../components/publicLists/PublicListCard";
 import { Carousel } from "../components/publicLists/Carousel";
 import { PublicList } from "../components/publicLists/types";
 
@@ -11,17 +11,17 @@ export const Home = () => {
   const { user } = useAuth();
 
   // Query for top liked lists
-  const { data: topLikedLists } = useQuery<PublicList[]>({
-    queryKey: ["topLikedLists"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .rpc("get_lists_with_likes")
-        .order("likes", { ascending: false })
-        .limit(4);
-      if (error) throw error;
-      return data as PublicList[];
-    },
-  });
+  // const { data: topLikedLists } = useQuery<PublicList[]>({
+  //   queryKey: ["topLikedLists"],
+  //   queryFn: async () => {
+  //     const { data, error } = await supabase
+  //       .rpc("get_lists_with_likes")
+  //       .order("likes", { ascending: false })
+  //       .limit(4);
+  //     if (error) throw error;
+  //     return data as PublicList[];
+  //   },
+  // });
 
   // Query functions for carousels
   const fetchMostViewedLists = async (): Promise<PublicList[]> => {
@@ -38,7 +38,7 @@ export const Home = () => {
         is_completed,
         view_count,
         user_id,
-        profiles:user_id!inner(username),
+        profiles:user_id(id, username),
         tasks:tasks(description, is_completed)
       `
       )
@@ -50,14 +50,15 @@ export const Home = () => {
 
     return data.map((item) => {
       // Gestione sicura dei profili
-      let profile = { username: "Anonymous" };
-      if (item.profiles) {
-        if (Array.isArray(item.profiles)) {
-          profile = item.profiles[0] || profile;
-        } else {
-          profile = item.profiles;
-        }
-      }
+      const profile = {
+        id: item.user_id, // Usiamo user_id come fallback
+        username: "Anonymous",
+        ...(item.profiles 
+          ? Array.isArray(item.profiles) 
+            ? item.profiles[0] 
+            : item.profiles
+          : {})
+      };
 
       return {
         ...item,
@@ -91,7 +92,7 @@ export const Home = () => {
         is_completed,
         view_count,
         user_id,
-        profiles:user_id!inner(username),
+        profiles:user_id!inner(id, username),
         tasks:tasks(description, is_completed)
       `
       )
@@ -146,7 +147,7 @@ export const Home = () => {
         Explore Lists
       </h2>
 
-      {/* Top liked lists (desktop only) */}
+      {/* Top liked lists (desktop only)
       <div className="hidden lg:block mb-12">
         <h3 className="text-2xl font-bold text-gray-200 mb-6 px-4">
           Top Community Picks
@@ -158,10 +159,10 @@ export const Home = () => {
             ))}
           </div>
         )}
-      </div>
+      </div> */}
 
      {/* Carousels */}
-     <div className="space-y-6 md:space-y-12">
+     <div className="space-y-8 md:space-y-12">
         {/* Most Viewed */}
         <div className="px-4 relative">
         <h3 className="text-xl md:text-2xl font-bold text-gray-200 mb-3 md:mb-6">

@@ -10,6 +10,7 @@ export interface PublicList {
   view_count: number;
   user_id: string;
   profiles: {
+    id: string;
     username: string;
   };
   tasks: {
@@ -44,7 +45,7 @@ export interface PersonalList {
 export interface Profile {
   id: string;
   username: string;
-  email: string;
   points: number;
-  created_at: string;
+  email?: string;
+  created_at?: string;
 }

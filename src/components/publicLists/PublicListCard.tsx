@@ -2,8 +2,11 @@ import { useCallback, useEffect } from "react";
 import { EyeIcon } from "../../svgs/Svgs";
 import { supabase } from "../../supabase-client";
 import { LikeButton } from "./LikeButton";
+import { Link } from "react-router-dom";
+// import { useAuth } from "../../context/AuthContext";
 
 interface Profile {
+  id: string;
   username: string;
 }
 
@@ -30,6 +33,9 @@ interface PublicListCardProps {
 }
 
 export const PublicListCard = ({ list, userId }: PublicListCardProps) => {
+
+  // const { user } = useAuth();
+
   const trackView = useCallback(async () => {
     try {
       if (!userId) return;
@@ -74,15 +80,21 @@ export const PublicListCard = ({ list, userId }: PublicListCardProps) => {
   const punishment = list.punishment ?? undefined;
 
   const profilesArray = Array.isArray(list.profiles)
-    ? list.profiles
-    : [list.profiles || { username: "Utente Anonimo" }];
+  ? list.profiles
+  : [list.profiles || { username: "Utente Anonimo", id: 'unknown' }];
 
   const profile = profilesArray[0];
   const tasks = list.tasks || [];
   const completedTasks = tasks.filter((task) => task.is_completed).length;
   const completionPercentage =
     tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
-
+    if (!list.profiles) {
+      console.error('List profile is missing:', list);
+      return <div>Errore: profilo mancante</div>;
+    }
+    console.log('Profile ID in card:', userId);
+    console.log('Link to profile:', `/detail/profile/${list.user_id}`);
+console.log('Profile data:', profile);
   return (
     <div className="flex flex-col h-full bg-gray-800 rounded-xl border border-gray-700 overflow-hidden hover:border-purple-500 transition-all duration-300 shadow-lg hover:shadow-purple-500/10">
       {/* Header */}
@@ -92,9 +104,18 @@ export const PublicListCard = ({ list, userId }: PublicListCardProps) => {
             {profile.username.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="font-medium text-gray-200 truncate">
+          <Link
+          
+              to={`/detail/profile/${list.user_id}`}
+              className="text-gray-300 hover:text-white transition-colors">
+
+              <p className="font-medium text-gray-200 truncate">
               {profile.username}
             </p>
+            
+            </Link>
+            
+
             <p className="text-xs text-purple-400 capitalize flex items-center mt-1">
               <span className="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
               {list.type}
