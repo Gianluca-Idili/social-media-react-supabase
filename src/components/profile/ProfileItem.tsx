@@ -1,5 +1,8 @@
+import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { GearIcon } from "../../svgs/Svgs";
 import { Instructions } from "./Instructions";
+import { PersonalStats } from "./PersonalStats";
 
 interface ProfileProps {
   username: string;
@@ -16,9 +19,22 @@ export const ProfileItem = ({
   createdAt,
   onEdit,
 }: ProfileProps) => {
+  const [currentPoints, setCurrentPoints] = useState(points);
+  const { user } = useAuth();
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("it-IT");
   };
+
+  // Se l'utente non è loggato, non mostrare la sezione stats
+  if (!user) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 bg-black rounded-xl shadow-lg border border-gray-800">
+        <div className="text-center py-10">
+          <p className="text-lg text-gray-300">Effettua il login per vedere il tuo profilo</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-black rounded-xl shadow-lg border border-gray-800">
@@ -58,7 +74,7 @@ export const ProfileItem = ({
                 Punteggio:
               </label>
               <div className="p-3 bg-gray-900 rounded-lg border border-gray-700 text-white">
-                {points}
+                {currentPoints} {/* Mostra currentPoints invece di points */}
               </div>
             </div>
 
@@ -72,6 +88,15 @@ export const ProfileItem = ({
           </div>
         </div>
       </div>
+      
+      {/* Sezione statistiche */}
+      <PersonalStats
+        userId={user.id} 
+        currentUserId={user.id}
+        points={currentPoints} 
+        onPointsChange={setCurrentPoints} 
+      />
     </div>
+
   );
 };

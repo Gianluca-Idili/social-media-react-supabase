@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../supabase-client";
 import { Link } from "react-router-dom";
 import { ArrowLeftIcon } from "../../svgs/Svgs";
+import { PersonalStatsRadar } from "../profile/PersonalStatsRadar";
+import { getAbbreviatedLabel } from "../../utils/listHelpers";
 
 interface ProfileStats {
   completed_lists: number;
@@ -9,23 +11,44 @@ interface ProfileStats {
   total_lists: number;
 }
 
+interface Stat {
+  name: string;
+  level: number;
+  icon: string;
+  color: string;
+  type: string;
+}
+
 interface ProfileData {
   username: string;
   points: number;
   stats: ProfileStats;
+  userStats: Stat[]; 
 }
+ 
+  const initialStats = [
+    { name: "Forza", level: 0, icon: "💪", color: "#F87171", type: "forza" },
+    { name: "Resistenza", level: 0, icon: "🛡️", color: "#60A5FA", type: "resistenza" },
+    { name: "Velocità", level: 0, icon: "⚡", color: "#FBBF24", type: "velocita" },
+    { name: "Percezione", level: 0, icon: "👁️", color: "#34D399", type: "percezione" },
+    { name: "Intelligenza", level: 0, icon: "🧠", color: "#A78BFA", type: "intelligenza" },
+    { name: "Fortuna", level: 0, icon: "🍀", color: "#F472B6", type: "fortuna" },
+  ];
 
 export const PublicDetailProfile = ({ profileId }: { profileId: string }) => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  
+
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         setLoading(true);
 
-        // Fetch profilo base
+        
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("username, points")
@@ -35,25 +58,38 @@ export const PublicDetailProfile = ({ profileId }: { profileId: string }) => {
         if (profileError) throw profileError;
         if (!profileData) throw new Error("Profilo non trovato");
 
-        // Fetch statistiche con type casting esplicito
-        const { data: statsData, error: statsError } = await supabase
+        
+        const { data: statsData } = await supabase
           .rpc("get_user_list_stats", { user_id: profileId })
           .select()
           .single();
 
-        console.log("Stats data:", statsData);
-        console.log("Stats error:", statsError);
+        
+        const { data: personalStatsData } = await supabase
+          .from("stats")
+          .select("*")
+          .eq("user_id", profileId)
+          .single();
 
-        // Creazione oggetto stats con valori di default
+      
         const stats: ProfileStats = {
           completed_lists: statsData?.completed_lists ? Number(statsData.completed_lists) : 0,
           expired_lists: statsData?.expired_lists ? Number(statsData.expired_lists) : 0,
           total_lists: statsData?.total_lists ? Number(statsData.total_lists) : 0
         };
 
+        
+        const userStats = personalStatsData 
+          ? initialStats.map(stat => ({
+              ...stat,
+              level: personalStatsData[stat.type as keyof typeof personalStatsData] || 0
+            }))
+          : initialStats;
+
         setProfile({
           ...profileData,
-          stats
+          stats,
+          userStats 
         });
       } catch (err) {
         console.error("Error:", err);
@@ -144,6 +180,64 @@ export const PublicDetailProfile = ({ profileId }: { profileId: string }) => {
           />
         </div>
 
+        <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 shadow-lg mt-8">
+  {profile.userStats && (
+    <>
+      <PersonalStatsRadar
+        stats={profile.userStats} 
+        isOwner={false}
+      />
+      
+      {/* Legenda migliorata */}
+      <div className="mt-4">
+        {/* Versione mobile - compatta */}
+        <div className="block lg:hidden">
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {profile.userStats.map((stat) => (
+              <div key={stat.type} className="flex items-center bg-gray-800/50 px-2 py-1 rounded">
+                <span className="mr-1">{stat.icon}</span>
+                <span className="truncate">{getAbbreviatedLabel(stat.name)}</span>
+                <span className="ml-auto font-bold text-purple-400">{stat.level}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Versione desktop - estesa */}
+        <div className="hidden lg:block">
+          <div className="grid grid-cols-3 gap-3">
+            {profile.userStats.map((stat) => (
+              <div 
+                key={stat.type} 
+                className="flex items-center p-2 rounded-lg border"
+                style={{
+                  background: `${stat.color}10`,
+                  borderColor: `${stat.color}30`
+                }}
+              >
+                <span className="text-xl mr-3">{stat.icon}</span>
+                <div className="flex-1">
+                  <div className="text-sm font-medium" style={{ color: stat.color }}>
+                    {stat.name}
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-xs" style={{ color: `${stat.color}90` }}>
+                      Livello
+                    </span>
+                    <span className="font-bold" style={{ color: stat.color }}>
+                      {stat.level}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  )}
+</div>
+
         <div className="flex justify-center mt-8">
           <Link
             to="/"
@@ -158,7 +252,7 @@ export const PublicDetailProfile = ({ profileId }: { profileId: string }) => {
   );
 };
 
-// Componente helper per le card statistiche (invariato)
+
 const StatCard = ({
   title,
   value,

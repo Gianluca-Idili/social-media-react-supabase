@@ -49,3 +49,11 @@ export interface Profile {
   email?: string;
   created_at?: string;
 }
+
+export interface Stat {
+  name: string;
+  level: number;
+  icon: string;
+  color: string;
+  type: string;
+}

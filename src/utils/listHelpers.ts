@@ -99,3 +99,16 @@ export const checkListLimit = async (userId: string, listType: ListType): Promis
     default: return true;
   }
 };
+
+// abbreviazioni per il grafico!
+export const getAbbreviatedLabel = (name: string): string => {
+  const abbreviations: Record<string, string> = {
+    'Forza': 'FZA',
+    'Resistenza': 'RST', 
+    'Velocità': 'VEL',
+    'Percezione': 'PRC',
+    'Intelligenza': 'INT',
+    'Fortuna': 'FRT'
+  };
+  return abbreviations[name] || name;
+};
