@@ -45,7 +45,7 @@ export interface PersonalList {
 export interface Profile {
   id: string;
   username: string;
-  points: number;
+  points?: number;
   email?: string;
   created_at?: string;
 }

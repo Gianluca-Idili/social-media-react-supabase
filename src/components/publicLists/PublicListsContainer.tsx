@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../supabase-client";
 import { PublicListCard } from "./PublicListCard";
 import { useEffect, useState } from "react";
+import { Profile } from "./types";
 
 interface PublicList {
   id: string;
@@ -13,9 +14,7 @@ interface PublicList {
   completed_at: string | null;
   view_count: number;
   user_id: string;
-  profiles: {
-    username: string;
-  }[];
+  profiles:  Profile[];
   tasks: {
     description: string;
     is_completed: boolean;
@@ -36,7 +35,7 @@ const fetchPublicLists = async (): Promise<PublicList[]> => {
         is_completed,
         view_count,
         user_id,
-        profiles:user_id!inner(username),
+        profiles:user_id!inner(id, username),
         tasks:tasks(description, is_completed)
       `
     )
