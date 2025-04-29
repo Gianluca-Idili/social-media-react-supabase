@@ -3,8 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase-client";
 import { useAuth } from "../../context/AuthContext";
 import { FakeIcon, RealIcon } from "../../svgs/Svgs";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 interface Props {
   listId: string;
@@ -12,12 +10,17 @@ interface Props {
 
 interface Vote {
   id: number;
-  list_id: string;
-  user_id: string;
+  list_id?: string;
+  user_id?: string;
   vote: number;
 }
 
-const vote = async (voteValue: number, listId: string, userId: string) => {
+interface VoteAction {
+  action: "added" | "removed" | "updated";
+  vote: number;
+}
+
+const vote = async (voteValue: number, listId: string, userId: string): Promise<VoteAction> => {
   if (!userId) throw new Error("User ID is required");
 
   const { data: existingVote, error: fetchError } = await supabase
@@ -36,7 +39,6 @@ const vote = async (voteValue: number, listId: string, userId: string) => {
         .delete()
         .eq("id", existingVote.id);
       if (error) throw new Error(error.message);
-      toast.success(`Vote removed!`);
       return { action: "removed", vote: voteValue };
     } else {
       const { error } = await supabase
@@ -44,7 +46,6 @@ const vote = async (voteValue: number, listId: string, userId: string) => {
         .update({ vote: voteValue })
         .eq("id", existingVote.id);
       if (error) throw new Error(error.message);
-      toast.success(`Vote updated to ${voteValue === 1 ? "Real" : "Fake"}!`);
       return { action: "updated", vote: voteValue };
     }
   } else {
@@ -52,7 +53,6 @@ const vote = async (voteValue: number, listId: string, userId: string) => {
       .from("votes")
       .insert({ list_id: listId, user_id: userId, vote: voteValue });
     if (error) throw new Error(error.message);
-    toast.success(`Voted ${voteValue === 1 ? "Real" : "Fake"}!`);
     return { action: "added", vote: voteValue };
   }
 };
@@ -60,18 +60,63 @@ const vote = async (voteValue: number, listId: string, userId: string) => {
 const fetchVotes = async (listId: string): Promise<Vote[]> => {
   const { data, error } = await supabase
     .from("votes")
-    .select("id, user_id, vote, list_id")
+    .select("id, user_id, vote")
     .eq("list_id", listId);
 
   if (error) throw new Error(error.message);
-  return data || []; // Restituisce array vuoto se data è null
+  return data || [];
 };
 
 export const LikeButton = ({ listId }: Props) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Sottoscrizione realtime
+  const { mutate } = useMutation<VoteAction, Error, number, { previousVotes?: Vote[] }>({
+    mutationFn: (voteValue: number) => {
+      if (!user?.id) throw new Error("You must be logged in to vote!");
+      return vote(voteValue, listId, user.id);
+    },
+    onMutate: async (voteValue) => {
+      await queryClient.cancelQueries({ queryKey: ["votes", listId] });
+      
+      const previousVotes = queryClient.getQueryData<Vote[]>(["votes", listId]);
+      
+      queryClient.setQueryData(["votes", listId], (old: Vote[] | undefined) => {
+        const existingVoteIndex = old?.findIndex(v => v.user_id === user?.id) ?? -1;
+        
+        if (existingVoteIndex >= 0) {
+          if (old?.[existingVoteIndex].vote === voteValue) {
+            return old?.filter(v => v.user_id !== user?.id) || [];
+          } else {
+            return old?.map(v => 
+              v.user_id === user?.id ? { ...v, vote: voteValue } : v
+            ) || [];
+          }
+        } else {
+          return [
+            ...(old || []), 
+            {
+              id: Date.now(),
+              list_id: listId,
+              user_id: user?.id,
+              vote: voteValue
+            }
+          ];
+        }
+      });
+      
+      return { previousVotes };
+    },
+    onError: (err, _, context) => {
+      if (context?.previousVotes) {
+        queryClient.setQueryData(["votes", listId], context.previousVotes);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["votes", listId] });
+    }
+  });
+
   useEffect(() => {
     const channel = supabase
       .channel(`votes:${listId}`)
@@ -94,36 +139,15 @@ export const LikeButton = ({ listId }: Props) => {
     };
   }, [listId, queryClient]);
 
-  const {
-    data: votes,
-    isLoading,
-    error,
-  } = useQuery<Vote[], Error>({
+  const { data: votes, isLoading, error } = useQuery<Vote[], Error>({
     queryKey: ["votes", listId],
     queryFn: () => fetchVotes(listId),
-    retry: 2,
+    retry: 1,
+    staleTime: 1000 * 60 * 5,
   });
 
-  const { mutate } = useMutation({
-    mutationFn: (voteValue: number) => {
-      if (!user?.id) {
-        toast.error("Please login to vote!");
-        throw new Error("You must be logged in to vote!");
-      }
-      return vote(voteValue, listId, user.id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["votes", listId] });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
-  });
-
-  if (isLoading)
-    return <div className="text-gray-400 py-2">Loading votes...</div>;
-  if (error)
-    return <div className="text-red-500 py-2">Error loading votes</div>;
+  if (isLoading) return <div className="text-gray-400 py-2">Loading votes...</div>;
+  if (error) return <div className="text-red-500 py-2">Error loading votes</div>;
 
   const likes = votes?.filter((v) => v.vote === 1).length || 0;
   const dislikes = votes?.filter((v) => v.vote === -1).length || 0;
