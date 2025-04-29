@@ -107,7 +107,7 @@ export const LikeButton = ({ listId }: Props) => {
       
       return { previousVotes };
     },
-    onError: (err, _, context) => {
+    onError: (_err, _voteValue, context) => {
       if (context?.previousVotes) {
         queryClient.setQueryData(["votes", listId], context.previousVotes);
       }
