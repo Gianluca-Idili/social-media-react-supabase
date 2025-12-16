@@ -98,7 +98,7 @@ console.log('Profile data:', profile);
   return (
     <div className="flex flex-col h-full bg-gray-800 rounded-xl border border-gray-700 overflow-hidden hover:border-purple-500 transition-all duration-300 shadow-lg hover:shadow-purple-500/10">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-700/50 to-purple-500/10">
+      <div className="flex items-center justify-between p-3.5 bg-gradient-to-r from-gray-700/50 to-purple-500/10">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md">
             {profile.username.charAt(0).toUpperCase()}
@@ -131,16 +131,16 @@ console.log('Profile data:', profile);
       </div>
 
       {/* Contenuto principale */}
-      <div className="flex-grow p-4 space-y-4">
-        <h3 className="text-xl font-bold text-gray-100 mb-1 truncate">
+      <div className="flex-grow p-3.5 space-y-3.5">
+        <h3 className="text-lg font-bold text-gray-100 mb-1 truncate">
           {list.title}
         </h3>
 
         {/* Progress bar */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-400">Progresso</span>
-            <span className="font-mono text-sm bg-gray-700 px-2 py-1 rounded-md">
+            <span className="text-xs text-gray-400">Progresso</span>
+            <span className="font-mono text-xs bg-gray-700 px-2 py-1 rounded-md">
               {completionPercentage}%
             </span>
           </div>
@@ -158,9 +158,9 @@ console.log('Profile data:', profile);
         {(list.is_completed && reward) || (!list.is_completed && punishment) ? (
           <div className="space-y-2">
             {list.is_completed && reward && (
-              <div className="bg-gradient-to-r from-purple-500/10 to-transparent p-3 rounded-lg border border-purple-500/20">
+              <div className="bg-gradient-to-r from-purple-500/10 to-transparent p-2.5 rounded-lg border border-purple-500/20">
                 <p className="text-xs text-gray-400 mb-1">Ricompensa</p>
-                <p className="text-purple-300 font-medium flex items-center">
+                <p className="text-purple-300 font-medium text-sm flex items-center">
                   <span className="mr-2">🎁</span>
                   <span className="truncate">{reward}</span>
                 </p>
@@ -168,9 +168,9 @@ console.log('Profile data:', profile);
             )}
 
             {!list.is_completed && punishment && (
-              <div className="bg-gradient-to-r from-pink-500/10 to-transparent p-3 rounded-lg border border-pink-500/20">
+              <div className="bg-gradient-to-r from-pink-500/10 to-transparent p-2.5 rounded-lg border border-pink-500/20">
                 <p className="text-xs text-gray-400 mb-1">Punizione</p>
-                <p className="text-pink-300 font-medium flex items-center">
+                <p className="text-pink-300 font-medium text-sm flex items-center">
                   <span className="mr-2">💢</span>
                   <span className="truncate">{punishment}</span>
                 </p>
@@ -181,15 +181,15 @@ console.log('Profile data:', profile);
 
         {/* Tasks preview */}
         {tasks.length > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <p className="text-xs text-gray-500 uppercase tracking-wider">
               Tasks ({tasks.length})
             </p>
-            <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
-              {tasks.slice(0, 4).map((task, index) => (
+            <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
+              {tasks.slice(0, 3).map((task, index) => (
                 <div key={index} className="flex items-center gap-3 group">
                   <span
-                    className={`flex-shrink-0 inline-block w-4 h-4 rounded-full transition-all ${
+                    className={`flex-shrink-0 inline-block w-3.5 h-3.5 rounded-full transition-all ${
                       task.is_completed
                         ? "bg-green-500 group-hover:bg-green-400"
                         : "bg-gray-600 group-hover:bg-gray-500"
@@ -207,9 +207,9 @@ console.log('Profile data:', profile);
                 </div>
               ))}
             </div>
-            {tasks.length > 4 && (
+            {tasks.length > 3 && (
               <p className="text-xs text-gray-500 mt-1">
-                +{tasks.length - 4} altri task...
+                +{tasks.length - 3} altri task...
               </p>
             )}
           </div>
@@ -217,13 +217,13 @@ console.log('Profile data:', profile);
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 bg-gray-900/50 border-t border-gray-700 flex justify-between items-center">
+      <div className="px-3.5 py-2.5 bg-gray-900/50 border-t border-gray-700 flex justify-between items-center">
         <div className="hidden sm:flex items-center gap-4">
           <div className="flex items-center gap-1.5 text-gray-400">
-            <EyeIcon className="w-5 h-5 flex-shrink-0" />
-            <span className="font-medium">{list.view_count ?? 0}</span>
+            <EyeIcon className="w-4 h-4 flex-shrink-0" />
+            <span className="font-medium text-sm">{list.view_count ?? 0}</span>
           </div>
-          <span className="text-gray-500">{tasks.length} task</span>
+          <span className="text-gray-500 text-sm">{tasks.length} task</span>
         </div>
 
         <LikeButton listId={list.id} />
