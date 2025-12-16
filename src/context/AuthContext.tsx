@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 interface AuthContextType {
   user: User | null;
   signInWithGitHub: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -54,10 +55,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .single();
 
     if (error?.code === "PGRST116") {
+      // Determina username in base al provider
+      let username = "";
+      if (user.app_metadata?.provider === "github") {
+        username = user.user_metadata?.user_name || user.user_metadata?.preferred_username || "";
+      } else if (user.app_metadata?.provider === "google") {
+        username = user.user_metadata?.full_name || user.user_metadata?.name || "";
+      }
+      
       await supabase.from("profiles").insert({
         id: user.id,
         email: user.email || "",
-        username: user.user_metadata?.user_name || "",
+        username: username,
       });
     }
   };
@@ -80,6 +89,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+      });
+      if (error) throw error;
+    } catch (error) {
+      toast.error("Login con Google fallito");
+      console.error(error);
+    }
+  };
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -96,7 +117,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, signInWithGitHub, signOut }}>
+    <AuthContext.Provider value={{ user, signInWithGitHub, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   );
