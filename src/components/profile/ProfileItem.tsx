@@ -3,6 +3,8 @@ import { useAuth } from "../../context/AuthContext";
 import { GearIcon } from "../../svgs/Svgs";
 import { Instructions } from "./Instructions";
 import { PersonalStats } from "./PersonalStats";
+import { RealFakeBar } from "./RealFakeBar";
+import { CompletionBar } from "./CompletionBar";
 
 interface ProfileProps {
   username: string;
@@ -96,6 +98,12 @@ export const ProfileItem = ({
         points={currentPoints} 
         onPointsChange={setCurrentPoints} 
       />
+      
+      {/* Barra Real vs Fake */}
+      <RealFakeBar userId={user.id} />
+      
+      {/* Barra Completamento */}
+      <CompletionBar userId={user.id} />
     </div>
 
   );
