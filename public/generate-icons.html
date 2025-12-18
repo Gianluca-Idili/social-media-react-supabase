@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Icon Generator</title>
+</head>
+<body>
+  <h1>Task.level Icon Generator</h1>
+  <p>Right-click and save these images:</p>
+  
+  <h2>192x192 Icon</h2>
+  <canvas id="icon192" width="192" height="192"></canvas>
+  <br><br>
+  
+  <h2>512x512 Icon</h2>
+  <canvas id="icon512" width="512" height="512"></canvas>
+  <br><br>
+  
+  <h2>Screenshot Wide (1280x720)</h2>
+  <canvas id="screenshotWide" width="1280" height="720"></canvas>
+  <br><br>
+  
+  <h2>Screenshot Mobile (720x1280)</h2>
+  <canvas id="screenshotMobile" width="720" height="1280"></canvas>
+
+  <script>
+    function createIcon(canvasId, size) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#8b5cf6'); // purple-500
+      gradient.addColorStop(1, '#ec4899'); // pink-500
+      
+      // Draw rounded rect background
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      const radius = size * 0.15;
+      ctx.roundRect(0, 0, size, size, radius);
+      ctx.fill();
+      
+      // Draw "T" letter with level indicator
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${size * 0.5}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('T', size / 2, size * 0.45);
+      
+      // Draw ".lvl" text smaller
+      ctx.font = `bold ${size * 0.15}px Arial`;
+      ctx.fillText('.lvl', size / 2, size * 0.75);
+    }
+    
+    function createScreenshot(canvasId, width, height) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      
+      // Dark background
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, width, height);
+      
+      // Gradient header
+      const gradient = ctx.createLinearGradient(0, 0, width, 0);
+      gradient.addColorStop(0, '#8b5cf6');
+      gradient.addColorStop(1, '#ec4899');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height * 0.1);
+      
+      // App name
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${Math.min(width, height) * 0.05}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.fillText('Task.level', width / 2, height * 0.06);
+      
+      // Mock content cards
+      ctx.fillStyle = '#1a1a2e';
+      const cardWidth = width * 0.8;
+      const cardHeight = height * 0.15;
+      const startY = height * 0.15;
+      
+      for (let i = 0; i < 4; i++) {
+        ctx.fillRect((width - cardWidth) / 2, startY + i * (cardHeight + 20), cardWidth, cardHeight);
+      }
+      
+      // Tagline
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = `${Math.min(width, height) * 0.03}px Arial`;
+      ctx.fillText('Gestisci le tue liste in modo sociale', width / 2, height * 0.9);
+    }
+    
+    // Generate all
+    createIcon('icon192', 192);
+    createIcon('icon512', 512);
+    createScreenshot('screenshotWide', 1280, 720);
+    createScreenshot('screenshotMobile', 720, 1280);
+    
+    // Convert to downloadable links
+    setTimeout(() => {
+      ['icon192', 'icon512', 'screenshotWide', 'screenshotMobile'].forEach(id => {
+        const canvas = document.getElementById(id);
+        const link = document.createElement('a');
+        link.download = id.replace('icon', 'icon-').replace('screenshot', 'screenshot-') + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.textContent = `Download ${link.download}`;
+        link.style.display = 'block';
+        link.style.margin = '10px';
+        canvas.parentNode.insertBefore(link, canvas.nextSibling);
+      });
+    }, 100);
+  </script>
+</body>
+</html>

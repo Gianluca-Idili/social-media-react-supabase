@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import { usePWAInstall } from "../hooks/usePWAInstall";
 
 export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { signInWithGitHub, signInWithGoogle, signOut, user } = useAuth();
+  const { isInstallable, isInstalled, handleInstallClick } = usePWAInstall();
 
   useEffect(() => {
     console.log("User ID:", user?.id);
@@ -74,6 +76,68 @@ export const Navbar = () => {
             >
               Profile
             </Link>
+            )}
+
+            {/* PWA Install Button */}
+            {!isInstalled && (
+              <div className="relative group">
+                <button
+                  onClick={() => {
+                    console.log('PWA Debug:', { isInstallable, isInstalled });
+                    if (isInstallable) {
+                      handleInstallClick();
+                    }
+                  }}
+                  className={`flex items-center px-3 py-2 rounded-lg text-white text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
+                    isInstallable 
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' 
+                      : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                  title={isInstallable ? "Installa l'app" : "Clicca per istruzioni"}
+                >
+                  <svg 
+                    className="w-4 h-4 mr-2" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
+                    />
+                  </svg>
+                  Download
+                </button>
+                
+                {/* Tooltip con istruzioni manuali se non installabile */}
+                {!isInstallable && (
+                  <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-gray-900 border border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <p className="text-xs text-gray-300 mb-2">
+                      <strong className="text-white">Installa manualmente:</strong>
+                    </p>
+                    <p className="text-xs text-gray-400 mb-1">
+                      🖥️ <strong>Chrome Desktop:</strong> Clicca ⋮ → "Installa Task.level..."
+                    </p>
+                    <p className="text-xs text-gray-400 mb-1">
+                      📱 <strong>Chrome Mobile:</strong> Clicca ⋮ → "Aggiungi a schermata Home"
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      🍎 <strong>Safari iOS:</strong> Clicca 📤 → "Aggiungi a Home"
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {isInstalled && (
+              <span className="flex items-center text-green-400 text-sm">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                </svg>
+                Installata
+              </span>
             )}
 
           </div>
@@ -245,6 +309,36 @@ export const Navbar = () => {
             >
               Lists
             </Link>
+
+            {/* PWA Install Button Mobile */}
+            {/* Debug: sempre visibile per test */}
+            <button
+              onClick={() => {
+                console.log('PWA Mobile Debug:', { isInstallable, isInstalled });
+                if (isInstallable) {
+                  handleInstallClick();
+                } else {
+                  alert('PWA non ancora installabile. Aspetta o ricarica la pagina.');
+                }
+                setMenuOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 rounded-md text-base font-medium text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center"
+            >
+              <svg 
+                className="w-5 h-5 mr-3" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
+                />
+              </svg>
+              <span>Installa App {isInstallable ? '✅' : '⏳'}</span>
+            </button>
 
             {/* Auth Buttons */}
             <div className="pt-2 border-t border-white/10">

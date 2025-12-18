@@ -13,6 +13,9 @@ dist-ssr
 *.local
 .env
 
+# VAPID Keys - NEVER COMMIT TO GIT
+VAPID_KEYS.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

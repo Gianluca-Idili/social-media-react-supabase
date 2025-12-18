@@ -1,0 +1,23 @@
+<!-- 
+ICONE PWA NECESSARIE:
+
+Per far funzionare la PWA, devi creare queste immagini nella cartella public/:
+
+1. icon-192x192.png - Icona 192x192 pixel
+2. icon-512x512.png - Icona 512x512 pixel
+
+Suggerimenti per creare le icone:
+- Usa il logo/nome "Task.level" 
+- Sfondo scuro (#0a0a0a) con testo/icona chiara
+- Font simile a quello della navbar
+- Design semplice e riconoscibile
+- Formato PNG con angoli arrotondati
+
+Puoi usare:
+- Canva.com
+- Figma
+- Photoshop
+- O anche generatori online di icone PWA
+
+Una volta create, sostituisci questo file con le icone reali.
+-->

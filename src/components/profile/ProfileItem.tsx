@@ -5,6 +5,7 @@ import { Instructions } from "./Instructions";
 import { PersonalStats } from "./PersonalStats";
 import { RealFakeBar } from "./RealFakeBar";
 import { CompletionBar } from "./CompletionBar";
+import { NotificationSettings } from "../notifications/NotificationSettings";
 
 interface ProfileProps {
   username: string;
@@ -104,6 +105,11 @@ export const ProfileItem = ({
       
       {/* Barra Completamento */}
       <CompletionBar userId={user.id} />
+      
+      {/* Impostazioni Notifiche */}
+      <div className="mt-8">
+        <NotificationSettings />
+      </div>
     </div>
 
   );
