@@ -63,20 +63,20 @@ self.addEventListener('push', (event) => {
 
   let notificationData = {
     title: 'Task.level',
-    body: 'Nuova notifica!',
-    icon: '/vite.svg',
-    badge: '/vite.svg',
+    body: 'Hai una nuova notifica!',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
     tag: 'task-level',
     data: {},
     actions: [
       {
         action: 'open',
         title: 'Apri',
-        icon: '/vite.svg'
+        icon: '/icon-192.png'
       },
       {
         action: 'dismiss',
-        title: 'Ignora'
+        title: 'Chiudi'
       }
     ]
   };

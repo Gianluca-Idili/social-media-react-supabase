@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { sendPushNotification } from '../../utils/notifications';
 
 export const NotificationSettings = () => {
   const { user } = useAuth();
@@ -13,6 +14,7 @@ export const NotificationSettings = () => {
   } = useNotifications(user?.id);
   
   const [isLoading, setIsLoading] = useState(false);
+  const [testStatus, setTestStatus] = useState<string | null>(null);
 
   const handleToggleNotifications = async () => {
     if (!user) return;
@@ -40,17 +42,39 @@ export const NotificationSettings = () => {
   };
 
   const handleTestNotification = async () => {
-    if (!subscription) return;
+    if (!subscription || !user) return;
     
-    // Test notification locale
+    setTestStatus('Invio in corso...');
+    
+    // Test notifica locale (immediata)
     if ('Notification' in window && permission === 'granted') {
-      new Notification('🔔 Test Notifica', {
-        body: 'Le notifiche funzionano correttamente!',
-        icon: '/vite.svg',
-        tag: 'test',
-        badge: '/vite.svg'
+      new Notification('🔔 Test Notifica Locale', {
+        body: 'Fantastico! Le notifiche funzionano! 🎉',
+        icon: '/icon-192.png',
+        tag: 'test-local',
       });
     }
+    
+    // Test notifica push tramite server (per verificare il sistema completo)
+    try {
+      const result = await sendPushNotification(user.id, {
+        title: '🚀 Test dal Server',
+        body: 'Se vedi questo messaggio, tutto funziona perfettamente!',
+        tag: 'test-server',
+      });
+      
+      if (result.success) {
+        setTestStatus(`✅ Inviata a ${result.sent} dispositivo/i`);
+      } else {
+        setTestStatus(`⚠️ ${result.error || 'Errore - riprova più tardi'}`);
+      }
+    } catch (error) {
+      setTestStatus('❌ Errore di connessione');
+      console.error(error);
+    }
+    
+    // Reset status dopo 3 secondi
+    setTimeout(() => setTestStatus(null), 3000);
   };
 
   if (!user) {
@@ -166,6 +190,13 @@ export const NotificationSettings = () => {
           </button>
         )}
       </div>
+
+      {/* Test status */}
+      {testStatus && (
+        <div className="mt-3 p-2 bg-gray-800 rounded-lg text-center text-sm text-gray-300">
+          {testStatus}
+        </div>
+      )}
 
       {/* Help text */}
       {permission === 'denied' && (
