@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { sendPushNotification } from '../../utils/notifications';
 
 export const NotificationSettings = () => {
   const { user } = useAuth();
@@ -90,6 +91,36 @@ export const NotificationSettings = () => {
     
     // Reset status dopo 3 secondi
     setTimeout(() => setTestStatus(null), 3000);
+  };
+
+  // Test che chiama la Edge Function (test completo del flusso)
+  const handleTestPushNotification = async () => {
+    if (!user) return;
+    
+    setTestStatus('🚀 Invio via Edge Function...');
+    
+    try {
+      const result = await sendPushNotification(user.id, {
+        title: '🔔 Test Push Completo',
+        body: 'Se vedi questo, le notifiche push funzionano! 🎉',
+        tag: 'test-push-complete',
+      });
+      
+      console.log('📤 Push test result:', result);
+      
+      if (result.success && result.sent && result.sent > 0) {
+        setTestStatus(`✅ Push inviata! (${result.sent} dispositivi)`);
+      } else if (result.success && result.sent === 0) {
+        setTestStatus('⚠️ Nessuna subscription trovata nel DB');
+      } else {
+        setTestStatus(`❌ Errore: ${result.error || 'Sconosciuto'}`);
+      }
+    } catch (error) {
+      console.error('Push test error:', error);
+      setTestStatus(`❌ Errore: ${(error as Error).message}`);
+    }
+    
+    setTimeout(() => setTestStatus(null), 5000);
   };
 
   if (!user) {
@@ -205,6 +236,21 @@ export const NotificationSettings = () => {
           </button>
         )}
       </div>
+
+      {/* Test Push via Edge Function */}
+      {subscription && (
+        <div className="mt-4">
+          <button
+            onClick={handleTestPushNotification}
+            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-300"
+          >
+            🚀 Test Push (via Server)
+          </button>
+          <p className="text-xs text-gray-500 mt-1 text-center">
+            Questo test invia una notifica push attraverso il server Supabase
+          </p>
+        </div>
+      )}
 
       {/* Test status */}
       {testStatus && (
