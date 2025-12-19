@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 
@@ -14,6 +14,24 @@ export const NotificationSettings = () => {
   
   const [isLoading, setIsLoading] = useState(false);
   const [testStatus, setTestStatus] = useState<string | null>(null);
+
+  // Monitor visibility changes to restore subscription on app resume
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && user?.id) {
+        // App came back to foreground, re-check subscription
+        navigator.serviceWorker.ready.then(async (registration) => {
+          const existingSubscription = await registration.pushManager.getSubscription();
+          if (existingSubscription) {
+            console.log('✅ Subscription restored from Service Worker');
+          }
+        }).catch(console.error);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user?.id]);
 
   const handleToggleNotifications = async () => {
     if (!user) return;

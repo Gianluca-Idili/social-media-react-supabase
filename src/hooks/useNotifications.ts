@@ -28,7 +28,17 @@ export const useNotifications = (userId?: string) => {
     };
 
     checkSupport();
-  }, []);
+    
+    // Restore subscription from Service Worker if exists
+    if (userId && 'serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.ready.then(async (registration) => {
+        const existingSubscription = await registration.pushManager.getSubscription();
+        if (existingSubscription) {
+          setSubscription(existingSubscription);
+        }
+      }).catch(console.error);
+    }
+  }, [userId]);
 
   // Request notification permission
   const requestPermission = async (): Promise<boolean> => {
