@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { supabase } from "../supabase-client";
 import { ListType, ListTypeWithEmpty, Task } from "../types/listTypes";
+import { notifyUser } from "./notifications";
 
 export const getInitialTasks = (listType: ListTypeWithEmpty): Task[] => {
   switch (listType) {
@@ -111,4 +112,45 @@ export const getAbbreviatedLabel = (name: string): string => {
     'Fortuna': 'FRT'
   };
   return abbreviations[name] || name;
+};
+// Check for lists expiring within 6 hours and send notifications
+export const checkListsExpiringWithin6Hours = async (userId: string) => {
+  try {
+    const now = new Date();
+    const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+
+    const { data: expiringLists, error } = await supabase
+      .from('lists')
+      .select('id, title, expires_at, notification_sent')
+      .eq('user_id', userId)
+      .eq('is_completed', false)
+      .gt('expires_at', now.toISOString())
+      .lt('expires_at', sixHoursFromNow.toISOString())
+      .eq('notification_sent', false);
+
+    if (error) {
+      console.error('Error checking expiring lists:', error);
+      return;
+    }
+
+    if (!expiringLists || expiringLists.length === 0) {
+      return;
+    }
+
+    // Send notification for each expiring list
+    for (const list of expiringLists) {
+      const expiresAt = new Date(list.expires_at as string);
+      const hoursLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / (60 * 60 * 1000));
+      
+      await notifyUser.expiring(userId, list.title, hoursLeft);
+
+      // Mark as notification sent
+      await supabase
+        .from('lists')
+        .update({ notification_sent: true })
+        .eq('id', list.id);
+    }
+  } catch (error) {
+    console.error('Error in checkListsExpiringWithin6Hours:', error);
+  }
 };

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../supabase-client";
 import { useAuth } from "../../context/AuthContext";
+import { notifyUser } from "../../utils/notifications";
 import { FakeIcon, RealIcon } from "../../svgs/Svgs";
 
 interface Props {
@@ -18,6 +19,7 @@ interface Vote {
 interface VoteAction {
   action: "added" | "removed" | "updated";
   vote: number;
+  listOwnerId?: string;
 }
 
 const vote = async (voteValue: number, listId: string, userId: string): Promise<VoteAction> => {
@@ -31,6 +33,13 @@ const vote = async (voteValue: number, listId: string, userId: string): Promise<
     .maybeSingle();
 
   if (fetchError) throw new Error(fetchError.message);
+
+  // Ottieni le info della lista (proprietario e titolo)
+  const { data: listData } = await supabase
+    .from("lists")
+    .select("owner_id, name")
+    .eq("id", listId)
+    .single();
 
   if (existingVote) {
     if (existingVote.vote === voteValue) {
@@ -46,14 +55,14 @@ const vote = async (voteValue: number, listId: string, userId: string): Promise<
         .update({ vote: voteValue })
         .eq("id", existingVote.id);
       if (error) throw new Error(error.message);
-      return { action: "updated", vote: voteValue };
+      return { action: "updated", vote: voteValue, listOwnerId: listData?.owner_id };
     }
   } else {
     const { error } = await supabase
       .from("votes")
       .insert({ list_id: listId, user_id: userId, vote: voteValue });
     if (error) throw new Error(error.message);
-    return { action: "added", vote: voteValue };
+    return { action: "added", vote: voteValue, listOwnerId: listData?.owner_id };
   }
 };
 
@@ -106,6 +115,26 @@ export const LikeButton = ({ listId }: Props) => {
       });
       
       return { previousVotes };
+    },
+    onSuccess: async (result) => {
+      // Invia notifica al proprietario della lista se è un nuovo voto
+      if ((result.action === "added" || result.action === "updated") && result.listOwnerId && result.listOwnerId !== user?.id) {
+        const voteType = result.vote === 1 ? "Real" : "Fake";
+        const userName = user?.user_metadata?.user_name || user?.user_metadata?.name || "Qualcuno";
+        const { data: listData } = await supabase
+          .from("lists")
+          .select("name")
+          .eq("id", listId)
+          .single();
+        
+        if (listData) {
+          if (result.vote === 1) {
+            await notifyUser.realVote(result.listOwnerId, userName, listData.name);
+          } else {
+            await notifyUser.fakeVote(result.listOwnerId, userName, listData.name);
+          }
+        }
+      }
     },
     onError: (_err, _voteValue, context) => {
       if (context?.previousVotes) {

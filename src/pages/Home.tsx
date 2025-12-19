@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 // import { useQuery } from "@tanstack/react-query";
@@ -6,11 +7,17 @@ import { supabase } from "../supabase-client";
 // import { PublicListCard } from "../components/publicLists/PublicListCard";
 import { FeaturedGridCarousel } from "../components/publicLists/FeaturedGridCarousel";
 import { PublicList } from "../components/publicLists/types";
+import { checkListsExpiringWithin6Hours } from "../utils/listHelpers";
 
 export const Home = () => {
   const { user } = useAuth();
 
-  // Query for top liked lists
+  // Check for lists expiring within 6 hours when user logs in
+  useEffect(() => {
+    if (user) {
+      checkListsExpiringWithin6Hours(user.id).catch(console.error);
+    }
+  }, [user]);
   // const { data: topLikedLists } = useQuery<PublicList[]>({
   //   queryKey: ["topLikedLists"],
   //   queryFn: async () => {

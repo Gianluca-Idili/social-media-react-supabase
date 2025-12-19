@@ -8,6 +8,7 @@ import {
   CheckIcon,
 } from "../../svgs/Svgs";
 import { CountdownTimer } from "./CountdownTimer";
+import { notifyUser } from "../../utils/notifications";
 
 interface Task {
   id: string;
@@ -64,6 +65,11 @@ export function CardList({ list }: ListCardProps) {
         .eq("id", list.id);
 
       if (listError) throw listError;
+
+      // Send notification when list is completed
+      if (allCompleted && !list.is_completed) {
+        await notifyUser.completed(list.user_id, list.title);
+      }
 
       await queryClient.invalidateQueries({
         queryKey: ["userLists", list.user_id],

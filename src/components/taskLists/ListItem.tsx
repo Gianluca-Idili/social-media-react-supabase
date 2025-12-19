@@ -1,5 +1,6 @@
 import { supabase } from "../../supabase-client";
 import { v4 as uuidv4 } from 'uuid';
+import { notifyUser } from "../../utils/notifications";
 
 interface TaskInput {
     id: string;
@@ -54,6 +55,11 @@ export async function ListItem(
   if (taskError) {
     return { success: false, message: 'Errore nella creazione delle task' };
   }
+
+  // Schedule 5-minute reminder notification
+  setTimeout(() => {
+    notifyUser.newList(userId, "Appena creato", `Lista ${type} creata 5 minuti fa. Come sta procedendo?`).catch(console.error);
+  }, 5 * 60 * 1000); // 5 minutes
 
   return { success: true, message: 'Lista creata con successo!' };
 }

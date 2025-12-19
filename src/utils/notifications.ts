@@ -74,6 +74,20 @@ export const NotificationTemplates = {
     tag: 'completed',
   }),
 
+  // Quando qualcuno visita il profilo pubblico
+  profileVisit: (visitorName: string) => ({
+    title: '👁️ Visita al profilo',
+    body: `${visitorName} ha visitato il tuo profilo pubblico!`,
+    tag: 'profile-visit',
+  }),
+
+  // Quando una lista scade
+  listExpired: (listTitle: string) => ({
+    title: '⏳ Lista scaduta',
+    body: `"${listTitle}" è scaduta. Puoi completarla comunque!`,
+    tag: 'expired',
+  }),
+
   // Quando completi un task
   taskCompleted: (taskName: string, remaining: number) => ({
     title: '✨ Task completato!',
@@ -151,6 +165,14 @@ export const notifyUser = {
 
   leaderboardDown: async (userId: string, position: number) => {
     return sendPushNotification(userId, NotificationTemplates.leaderboardDown(position));
+  },
+
+  profileVisit: async (userId: string, visitorName: string) => {
+    return sendPushNotification(userId, NotificationTemplates.profileVisit(visitorName));
+  },
+
+  expired: async (userId: string, listTitle: string) => {
+    return sendPushNotification(userId, NotificationTemplates.listExpired(listTitle));
   },
 
   dailyReminder: async (userId: string, pendingTasks: number) => {
