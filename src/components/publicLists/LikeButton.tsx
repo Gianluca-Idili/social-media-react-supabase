@@ -20,6 +20,7 @@ interface VoteAction {
   action: "added" | "removed" | "updated";
   vote: number;
   listOwnerId?: string;
+  listTitle?: string;
 }
 
 const vote = async (voteValue: number, listId: string, userId: string): Promise<VoteAction> => {
@@ -37,7 +38,7 @@ const vote = async (voteValue: number, listId: string, userId: string): Promise<
   // Ottieni le info della lista (proprietario e titolo)
   const { data: listData } = await supabase
     .from("lists")
-    .select("owner_id, name")
+    .select("user_id, title")
     .eq("id", listId)
     .single();
 
@@ -48,21 +49,21 @@ const vote = async (voteValue: number, listId: string, userId: string): Promise<
         .delete()
         .eq("id", existingVote.id);
       if (error) throw new Error(error.message);
-      return { action: "removed", vote: voteValue };
+      return { action: "removed", vote: voteValue, listOwnerId: listData?.user_id, listTitle: listData?.title };
     } else {
       const { error } = await supabase
         .from("votes")
         .update({ vote: voteValue })
         .eq("id", existingVote.id);
       if (error) throw new Error(error.message);
-      return { action: "updated", vote: voteValue, listOwnerId: listData?.owner_id };
+      return { action: "updated", vote: voteValue, listOwnerId: listData?.user_id, listTitle: listData?.title };
     }
   } else {
     const { error } = await supabase
       .from("votes")
       .insert({ list_id: listId, user_id: userId, vote: voteValue });
     if (error) throw new Error(error.message);
-    return { action: "added", vote: voteValue, listOwnerId: listData?.owner_id };
+    return { action: "added", vote: voteValue, listOwnerId: listData?.user_id, listTitle: listData?.title };
   }
 };
 
@@ -117,21 +118,14 @@ export const LikeButton = ({ listId }: Props) => {
       return { previousVotes };
     },
     onSuccess: async (result) => {
-      // Invia notifica al proprietario della lista se è un nuovo voto
-      if ((result.action === "added" || result.action === "updated") && result.listOwnerId && result.listOwnerId !== user?.id) {
+      // Invia notifica al proprietario della lista se è un nuovo voto o cambia voto
+      if ((result.action === "added" || result.action === "updated") && result.listOwnerId && result.listOwnerId !== user?.id && result.listTitle) {
         const userName = user?.user_metadata?.user_name || user?.user_metadata?.name || "Qualcuno";
-        const { data: listData } = await supabase
-          .from("lists")
-          .select("name")
-          .eq("id", listId)
-          .single();
         
-        if (listData) {
-          if (result.vote === 1) {
-            await notifyUser.realVote(result.listOwnerId, userName, listData.name);
-          } else {
-            await notifyUser.fakeVote(result.listOwnerId, userName, listData.name);
-          }
+        if (result.vote === 1) {
+          await notifyUser.realVote(result.listOwnerId, userName, result.listTitle);
+        } else {
+          await notifyUser.fakeVote(result.listOwnerId, userName, result.listTitle);
         }
       }
     },
