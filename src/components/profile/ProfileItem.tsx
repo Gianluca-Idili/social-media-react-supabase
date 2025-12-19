@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { Link } from "react-router-dom";
 import { GearIcon } from "../../svgs/Svgs";
 import { Instructions } from "./Instructions";
 import { PersonalStats } from "./PersonalStats";
 import { RealFakeBar } from "./RealFakeBar";
 import { CompletionBar } from "./CompletionBar";
-import { NotificationSettings } from "../notifications/NotificationSettings";
 
 interface ProfileProps {
   username: string;
@@ -106,9 +106,15 @@ export const ProfileItem = ({
       {/* Barra Completamento */}
       <CompletionBar userId={user.id} />
       
-      {/* Impostazioni Notifiche */}
-      <div className="mt-8">
-        <NotificationSettings />
+      {/* Link alle Impostazioni */}
+      <div className="mt-8 text-center">
+        <Link 
+          to="/settings"
+          className="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-lg transition-colors"
+        >
+          <span className="mr-2">⚙️</span>
+          Impostazioni
+        </Link>
       </div>
     </div>
 

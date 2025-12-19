@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Navbar } from './components/Navbar';
 import { ProfilePage } from './pages/ProfilePage';
+import { SettingsPage } from './pages/SettingsPage';
 import { CreateListPage } from './pages/CreateListPage';
 import { PublicListsPage } from './pages/PublicListsPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="/list/create" element={<CreateListPage />} />
         <Route path="/lists" element={<PublicListsPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
-import { sendPushNotification } from '../../utils/notifications';
 
 export const NotificationSettings = () => {
   const { user } = useAuth();
@@ -46,31 +45,29 @@ export const NotificationSettings = () => {
     
     setTestStatus('Invio in corso...');
     
-    // Test notifica locale (immediata)
+    // Test notifica locale (funziona sempre)
     if ('Notification' in window && permission === 'granted') {
-      new Notification('🔔 Test Notifica Locale', {
-        body: 'Fantastico! Le notifiche funzionano! 🎉',
-        icon: '/icon-192.png',
-        tag: 'test-local',
-      });
-    }
-    
-    // Test notifica push tramite server (per verificare il sistema completo)
-    try {
-      const result = await sendPushNotification(user.id, {
-        title: '🚀 Test dal Server',
-        body: 'Se vedi questo messaggio, tutto funziona perfettamente!',
-        tag: 'test-server',
-      });
-      
-      if (result.success) {
-        setTestStatus(`✅ Inviata a ${result.sent} dispositivo/i`);
-      } else {
-        setTestStatus(`⚠️ ${result.error || 'Errore - riprova più tardi'}`);
+      try {
+        // Usa il Service Worker per mostrare la notifica (più affidabile)
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification('🔔 Test Notifica', {
+          body: 'Fantastico! Le notifiche funzionano! 🎉',
+          icon: '/icon-192.png',
+          badge: '/icon-192.png',
+          tag: 'test-local',
+        });
+        setTestStatus('✅ Notifica inviata!');
+      } catch {
+        // Fallback a Notification API diretta
+        new Notification('🔔 Test Notifica', {
+          body: 'Fantastico! Le notifiche funzionano! 🎉',
+          icon: '/icon-192.png',
+          tag: 'test-local',
+        });
+        setTestStatus('✅ Notifica inviata!');
       }
-    } catch (error) {
-      setTestStatus('❌ Errore di connessione');
-      console.error(error);
+    } else {
+      setTestStatus('❌ Permesso notifiche non concesso');
     }
     
     // Reset status dopo 3 secondi
