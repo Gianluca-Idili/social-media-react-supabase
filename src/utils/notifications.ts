@@ -20,6 +20,9 @@ export const sendPushNotification = async (
   try {
     const targetIds = Array.isArray(userIds) ? userIds : [userIds];
     
+    console.log('📤 Sending push notification to:', targetIds);
+    console.log('📤 Payload:', payload);
+    
     const { data, error } = await supabase.functions.invoke('send-notification', {
       body: {
         userIds: targetIds,
@@ -31,11 +34,13 @@ export const sendPushNotification = async (
       }
     });
 
+    console.log('📤 Edge Function response:', data, error);
+
     if (error) throw error;
     
     return { success: true, sent: data?.sent || 0 };
   } catch (error) {
-    console.error('Errore invio notifica:', error);
+    console.error('❌ Errore invio notifica:', error);
     return { success: false, error: (error as Error).message };
   }
 };
