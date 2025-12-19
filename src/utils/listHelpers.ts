@@ -114,7 +114,14 @@ export const getAbbreviatedLabel = (name: string): string => {
   return abbreviations[name] || name;
 };
 // Check for lists expiring within 6 hours and send notifications
+// NOTE: Disabled until notification_sent column is added to lists table in Supabase
 export const checkListsExpiringWithin6Hours = async (userId: string) => {
+  // TODO: Enable this when notification_sent column exists in database
+  // For now, skip to avoid 400 errors
+  console.log('checkListsExpiringWithin6Hours disabled - notification_sent column not in DB yet');
+  return;
+  
+  /*
   try {
     const now = new Date();
     const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
@@ -153,4 +160,5 @@ export const checkListsExpiringWithin6Hours = async (userId: string) => {
   } catch (error) {
     console.error('Error in checkListsExpiringWithin6Hours:', error);
   }
+  */
 };
