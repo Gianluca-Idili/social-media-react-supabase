@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase-client';
 
-interface NotificationSubscription {
-  endpoint: string;
-  keys: {
-    auth: string;
-    p256dh: string;
-  };
-}
-
 export const useNotifications = (userId?: string) => {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
