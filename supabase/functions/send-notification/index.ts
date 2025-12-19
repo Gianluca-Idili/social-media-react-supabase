@@ -46,11 +46,17 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 // Funzione per inviare notifica push usando Web Push Protocol
 async function sendPushNotification(
-  subscription: { endpoint: string; p256dh_key: string; auth_key: string },
+  subscription: any,
   payload: PushPayload,
   vapidPrivateKey: string
 ): Promise<boolean> {
   try {
+    // Parse subscription data (può essere JSON string o object)
+    let subData = subscription.subscription;
+    if (typeof subData === 'string') {
+      subData = JSON.parse(subData);
+    }
+
     // Importa la libreria web-push per Deno
     const webPush = await import('https://esm.sh/web-push@3.6.7')
     
@@ -61,10 +67,10 @@ async function sendPushNotification(
     )
 
     const pushSubscription = {
-      endpoint: subscription.endpoint,
+      endpoint: subData.endpoint,
       keys: {
-        p256dh: subscription.p256dh_key,
-        auth: subscription.auth_key
+        p256dh: subData.keys.p256dh,
+        auth: subData.keys.auth
       }
     }
 
@@ -132,7 +138,6 @@ serve(async (req) => {
       .from('push_subscriptions')
       .select('*')
       .in('user_id', targetUserIds)
-      .eq('is_active', true)
 
     if (fetchError) {
       throw fetchError
@@ -150,11 +155,11 @@ serve(async (req) => {
       subscriptions.map(async (sub) => {
         const success = await sendPushNotification(sub, payload, vapidPrivateKey)
         
-        // Se la subscription non è più valida, disattivala
+        // Se la subscription non è più valida, rimuovila dal database
         if (!success) {
           await supabase
             .from('push_subscriptions')
-            .update({ is_active: false })
+            .delete()
             .eq('id', sub.id)
         }
         
