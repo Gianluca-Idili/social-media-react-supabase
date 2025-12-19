@@ -159,13 +159,11 @@ const saveSubscriptionToDatabase = async (
   subscription: PushSubscription, 
   userId: string
 ): Promise<void> => {
-  const subscriptionData: NotificationSubscription = {
-    endpoint: subscription.endpoint,
-    keys: {
-      auth: arrayBufferToBase64(subscription.getKey('auth')!),
-      p256dh: arrayBufferToBase64(subscription.getKey('p256dh')!)
-    }
-  };
+  const endpoint = subscription.endpoint;
+  const p256dh_key = arrayBufferToBase64(subscription.getKey('p256dh')!);
+  const auth_key = arrayBufferToBase64(subscription.getKey('auth')!);
+
+  console.log('💾 Saving subscription for user:', userId);
 
   // First delete any existing subscription for this user
   await supabase
@@ -173,19 +171,23 @@ const saveSubscriptionToDatabase = async (
     .delete()
     .eq('user_id', userId);
 
-  // Then insert new subscription
+  // Then insert new subscription with correct column names
   const { error } = await supabase
     .from('push_subscriptions')
     .insert({
       user_id: userId,
-      subscription: subscriptionData,
-      created_at: new Date().toISOString()
+      endpoint: endpoint,
+      p256dh_key: p256dh_key,
+      auth_key: auth_key,
+      is_active: true
     });
 
   if (error) {
-    console.error('Errore salvataggio subscription:', error);
+    console.error('💾 Errore salvataggio subscription:', error);
     throw error;
   }
+  
+  console.log('✅ Subscription salvata con successo!');
 };
 
 // Remove subscription from database

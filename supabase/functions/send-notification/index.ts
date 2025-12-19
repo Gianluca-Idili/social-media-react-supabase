@@ -52,10 +52,13 @@ async function sendPushNotification(
   vapidPrivateKey: string
 ): Promise<boolean> {
   try {
-    // Parse subscription data (può essere JSON string o object)
-    let subData = subscription.subscription;
-    if (typeof subData === 'string') {
-      subData = JSON.parse(subData);
+    // Le colonne sono: endpoint, p256dh_key, auth_key
+    const pushSubscription = {
+      endpoint: subscription.endpoint,
+      keys: {
+        p256dh: subscription.p256dh_key,
+        auth: subscription.auth_key
+      }
     }
 
     // Importa la libreria web-push per Deno
@@ -66,14 +69,6 @@ async function sendPushNotification(
       VAPID_PUBLIC_KEY,
       vapidPrivateKey
     )
-
-    const pushSubscription = {
-      endpoint: subData.endpoint,
-      keys: {
-        p256dh: subData.keys.p256dh,
-        auth: subData.keys.auth
-      }
-    }
 
     await webPush.sendNotification(
       pushSubscription,
