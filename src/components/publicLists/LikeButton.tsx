@@ -119,7 +119,6 @@ export const LikeButton = ({ listId }: Props) => {
     onSuccess: async (result) => {
       // Invia notifica al proprietario della lista se è un nuovo voto
       if ((result.action === "added" || result.action === "updated") && result.listOwnerId && result.listOwnerId !== user?.id) {
-        const voteType = result.vote === 1 ? "Real" : "Fake";
         const userName = user?.user_metadata?.user_name || user?.user_metadata?.name || "Qualcuno";
         const { data: listData } = await supabase
           .from("lists")

@@ -24,6 +24,7 @@ interface ListWithTasks {
   title: string;
   type: string;
   is_public: boolean;
+  is_completed: boolean;
   reward?: string | null;
   punishment?: string | null;
   completed_at?: string | null;

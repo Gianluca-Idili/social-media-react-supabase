@@ -1,4 +1,5 @@
-import { useParams, useEffect } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
 import { supabase } from "../supabase-client";
 import { useAuth } from "../context/AuthContext";
 import { sendPushNotification } from "../utils/notifications";
