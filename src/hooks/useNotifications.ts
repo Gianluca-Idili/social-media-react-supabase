@@ -167,16 +167,19 @@ const saveSubscriptionToDatabase = async (
     }
   };
 
+  // First delete any existing subscription for this user
+  await supabase
+    .from('push_subscriptions')
+    .delete()
+    .eq('user_id', userId);
+
+  // Then insert new subscription
   const { error } = await supabase
     .from('push_subscriptions')
-    .upsert([
-      {
-        user_id: userId,
-        subscription: subscriptionData,
-        created_at: new Date().toISOString()
-      }
-    ], {
-      onConflict: 'user_id'
+    .insert({
+      user_id: userId,
+      subscription: subscriptionData,
+      created_at: new Date().toISOString()
     });
 
   if (error) {
