@@ -1,38 +1,38 @@
 const { Jimp } = require('jimp');
 const fs = require('fs');
+const path = require('path');
 
-async function createIcon(size, filename) {
-  // Create new image with purple background
-  const image = new Jimp({ width: size, height: size, color: 0x8b5cf6ff });
-  await image.write(filename);
-  console.log(`Created ${filename}`);
-}
-
-async function createScreenshot(width, height, filename) {
-  // Create dark background
-  const image = new Jimp({ width, height, color: 0x0a0a0aff });
-  
-  // Add purple header bar
-  for (let y = 0; y < height * 0.1; y++) {
-    for (let x = 0; x < width; x++) {
-      image.setPixelColor(0x8b5cf6ff, x, y);
-    }
-  }
-  
-  await image.write(filename);
-  console.log(`Created ${filename}`);
-}
-
-async function main() {
+async function processIcons(sourcePath) {
   try {
-    await createIcon(192, 'public/icon-192.png');
-    await createIcon(512, 'public/icon-512.png');
-    await createScreenshot(1280, 720, 'public/screenshot-wide.png');
-    await createScreenshot(720, 1280, 'public/screenshot-mobile.png');
-    console.log('All icons created!');
+    console.log(`Reading source image from ${sourcePath}...`);
+    const sourceImage = await Jimp.read(sourcePath);
+    
+    // Create icons
+    const iconSizes = [192, 512];
+    for (const size of iconSizes) {
+      const icon = sourceImage.clone();
+      await icon.resize({ w: size, h: size });
+      const filename = `public/icon-${size}.png`;
+      await icon.write(filename);
+      console.log(`Created ${filename}`);
+    }
+
+    // Create screenshots (PWA screenshots should ideally be representative of the app, 
+    // but using the logo/splash theme is a common fallback if no UI screenshot is provided)
+    // We'll use the source image for now but centered on a dark canvas for "screenshot-wide" 
+    // and "screenshot-mobile" if the user wants them.
+    
+    // For now, let's just make sure the main icons are updated.
+    
+    console.log('All icons processed successfully!');
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error processing icons:', error);
   }
 }
 
-main();
+const source = path.join(__dirname, 'pwa-source.jpg');
+if (fs.existsSync(source)) {
+  processIcons(source);
+} else {
+  console.error('Source image pwa-source.jpg not found!');
+}
