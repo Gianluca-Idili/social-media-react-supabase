@@ -92,7 +92,11 @@ export const useNotifications = (userId?: string) => {
       console.log('✅ Push subscription creata:', newSubscription);
       return true;
     } catch (error) {
-      console.error('Errore subscription push:', error);
+      console.error('❌ Errore critico durante la subscription push:', error);
+      if (error instanceof Error) {
+        console.error('Messaggio:', error.message);
+        console.error('Stack:', error.stack);
+      }
       return false;
     }
   };

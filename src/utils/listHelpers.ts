@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { supabase } from "../supabase-client";
 import { ListType, ListTypeWithEmpty, Task } from "../types/listTypes";
-// import { notifyUser } from "./notifications"; // Disabled until notification_sent column exists
+import { notifyUser } from "./notifications";
 
 export const getInitialTasks = (listType: ListTypeWithEmpty): Task[] => {
   switch (listType) {
@@ -115,20 +115,14 @@ export const getAbbreviatedLabel = (name: string): string => {
 };
 // Check for lists expiring within 6 hours and send notifications
 // NOTE: Disabled until notification_sent column is added to lists table in Supabase
-export const checkListsExpiringWithin6Hours = async (_userId: string) => {
-  // TODO: Enable this when notification_sent column exists in database
-  // For now, skip to avoid 400 errors
-  console.log('checkListsExpiringWithin6Hours disabled - notification_sent column not in DB yet');
-  return;
-  
-  /*
+export const checkListsExpiringWithin6Hours = async (userId: string) => {
   try {
     const now = new Date();
     const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
 
     const { data: expiringLists, error } = await supabase
       .from('lists')
-      .select('id, title, expires_at, notification_sent')
+      .select('id, title, expires_at')
       .eq('user_id', userId)
       .eq('is_completed', false)
       .gt('expires_at', now.toISOString())
@@ -143,6 +137,8 @@ export const checkListsExpiringWithin6Hours = async (_userId: string) => {
     if (!expiringLists || expiringLists.length === 0) {
       return;
     }
+
+    console.log(`⏰ Found ${expiringLists.length} lists expiring soon. Sending notifications...`);
 
     // Send notification for each expiring list
     for (const list of expiringLists) {
@@ -160,5 +156,4 @@ export const checkListsExpiringWithin6Hours = async (_userId: string) => {
   } catch (error) {
     console.error('Error in checkListsExpiringWithin6Hours:', error);
   }
-  */
 };

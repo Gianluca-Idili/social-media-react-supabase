@@ -3,6 +3,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import webPush from 'npm:web-push@3.6.7'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -61,9 +62,7 @@ async function sendPushNotification(
       }
     }
 
-    // Importa la libreria web-push per Deno
-    const webPush = await import('https://esm.sh/web-push@3.6.7')
-    
+    // Non serve re-importare webPush qui
     webPush.setVapidDetails(
       'mailto:noreply@tasklevel.app',
       VAPID_PUBLIC_KEY,
@@ -152,29 +151,41 @@ serve(async (req) => {
     // Invia notifiche a tutte le subscriptions
     const results = await Promise.allSettled(
       subscriptions.map(async (sub) => {
-        const success = await sendPushNotification(sub, payload, vapidPrivateKey)
-        
-        // Se la subscription non è più valida, rimuovila dal database
-        if (!success) {
-          await supabase
-            .from('push_subscriptions')
-            .delete()
-            .eq('id', sub.id)
+        try {
+          const success = await sendPushNotification(sub, payload, vapidPrivateKey)
+          
+          // Se la subscription non è più valida, rimuovila dal database
+          if (!success) {
+            await supabase
+              .from('push_subscriptions')
+              .delete()
+              .eq('id', sub.id)
+          }
+          
+          return { subscriptionId: sub.id, success }
+        } catch (error) {
+          console.error(`❌ Errore critico per subscription ${sub.id}:`, error)
+          throw error // Verrà catturato da Promise.allSettled e finirà negli errors
         }
-        
-        return { subscriptionId: sub.id, success }
       })
     )
 
-    const sent = results.filter(r => r.status === 'fulfilled' && r.value.success).length
+    const sent = results.filter(r => r.status === 'fulfilled' && (r as PromiseFulfilledResult<any>).value.success).length
     const failed = results.length - sent
+    const errors = results
+      .filter(r => r.status === 'rejected')
+      .map(r => {
+        const reason = (r as PromiseRejectedResult).reason;
+        return reason && typeof reason === 'object' ? (reason.message || JSON.stringify(reason)) : String(reason);
+      })
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         sent, 
         failed,
-        total: subscriptions.length 
+        total: subscriptions.length,
+        errors: errors.length > 0 ? errors : undefined
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

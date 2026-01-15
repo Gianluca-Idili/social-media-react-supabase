@@ -1,6 +1,6 @@
 {
   "name": "Task.level - Social Task Manager",
-  "short_name": "Task.level", 
+  "short_name": "Task.level",
   "description": "Gestisci le tue liste di task in modo sociale e competitivo",
   "start_url": "/",
   "display": "standalone",
@@ -40,25 +40,47 @@
       "name": "Le mie liste",
       "short_name": "My Lists",
       "description": "Apri le tue liste personali",
-      "url": "/my-lists",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "url": "/lists",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Classifica",
-      "short_name": "Leaderboard", 
+      "short_name": "Leaderboard",
       "description": "Controlla la classifica",
       "url": "/leaderboard",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Crea Lista",
       "short_name": "Create",
       "description": "Crea una nuova lista",
-      "url": "/create-list", 
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "url": "/list/create",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ],
-  "categories": ["productivity", "social", "utilities"],
+  "categories": [
+    "productivity",
+    "social",
+    "utilities"
+  ],
   "lang": "it",
   "dir": "ltr",
   "prefer_related_applications": false

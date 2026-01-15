@@ -16,7 +16,7 @@ interface NotificationPayload {
 export const sendPushNotification = async (
   userIds: string | string[],
   payload: NotificationPayload
-): Promise<{ success: boolean; sent?: number; error?: string }> => {
+): Promise<{ success: boolean; sent?: number; failed?: number; errors?: any[]; error?: string }> => {
   try {
     const targetIds = Array.isArray(userIds) ? userIds : [userIds];
     
@@ -38,10 +38,21 @@ export const sendPushNotification = async (
 
     if (error) throw error;
     
-    return { success: true, sent: data?.sent || 0 };
+    return { 
+      success: true, 
+      sent: data?.sent || 0,
+      failed: data?.failed || 0,
+      errors: data?.errors
+    };
   } catch (error) {
     console.error('❌ Errore invio notifica:', error);
-    return { success: false, error: (error as Error).message };
+    return { 
+      success: false, 
+      sent: 0, 
+      failed: 1, 
+      error: (error as Error).message,
+      errors: [(error as Error).message]
+    };
   }
 };
 

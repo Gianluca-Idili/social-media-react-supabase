@@ -1,10 +1,10 @@
 // Service Worker per PWA + Push Notifications
-const CACHE_NAME = 'task-level-v2'; // Incremento versione per forzare aggiornamento
+const CACHE_NAME = 'task-level-v3'; // Incremento versione per forzare aggiornamento
 const urlsToCache = [
   '/',
-  '/static/css/',
-  '/static/js/',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 // Install event
@@ -23,20 +23,39 @@ self.addEventListener('install', (event) => {
 
 // Fetch event
 self.addEventListener('fetch', (event) => {
+  // Ignora le richieste alle API esterne (come Supabase) per evitare problemi CORS/Network
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Return cached version or fetch from network
+        // Ritorna la risorsa dalla cache se presente
         if (response) {
           return response;
         }
-        return fetch(event.request)
-          .catch(() => {
-            // If both cache and network fail, return offline page
-            if (event.request.destination === 'document') {
-              return caches.match('/');
-            }
+
+        // Altrimenti prova a scaricarla dal network
+        return fetch(event.request).then((networkResponse) => {
+          return networkResponse;
+        }).catch((error) => {
+          console.error('Fetch failed for:', event.request.url, error);
+          
+          // Se fallisce il caricamento di una pagina HTML, mostra il fallback offline (index.html)
+          if (event.request.mode === 'navigate' || 
+              (event.request.method === 'GET' && event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'))) {
+            return caches.match('/');
+          }
+          
+          // Importante: per evitare "Failed to convert value to 'Response'", 
+          // dobbiamo ritornare una Response valida anche in caso di errore.
+          return new Response('Network error occurred', {
+            status: 404,
+            statusText: 'Network error',
+            headers: new Headers({ 'Content-Type': 'text/plain' })
           });
+        });
       })
   );
 });
@@ -85,9 +104,17 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       const pushData = event.data.json();
-      notificationData = { ...notificationData, ...pushData };
+      if (pushData && typeof pushData === 'object') {
+        notificationData = { ...notificationData, ...pushData };
+      }
     } catch (error) {
-      console.error('Errore parsing push data:', error);
+      console.warn('⚠️ Push data non è JSON, provo come testo:', error);
+      try {
+        const textData = event.data.text();
+        if (textData) notificationData.body = textData;
+      } catch (e) {
+        console.error('❌ Errore parsing push data as text:', e);
+      }
     }
   }
 

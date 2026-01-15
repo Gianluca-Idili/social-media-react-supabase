@@ -119,23 +119,31 @@ export const LikeButton = ({ listId }: Props) => {
     },
     onSuccess: async (result) => {
       // Invia notifica al proprietario della lista se è un nuovo voto o cambia voto
-      console.log('🔔 Vote result:', result);
-      console.log('🔔 Current user:', user?.id);
-      console.log('🔔 List owner:', result.listOwnerId);
-      console.log('🔔 Should notify:', (result.action === "added" || result.action === "updated") && result.listOwnerId && result.listOwnerId !== user?.id && result.listTitle);
-      
       if ((result.action === "added" || result.action === "updated") && result.listOwnerId && result.listOwnerId !== user?.id && result.listTitle) {
+        
+        // RATE LIMIT: Massimo una notifica al minuto per questa lista dallo stesso utente
+        const rateLimitKey = `last_notif_${listId}`;
+        const lastNotifTime = localStorage.getItem(rateLimitKey);
+        const now = Date.now();
+        const ONE_MINUTE = 60 * 1000;
+
+        if (lastNotifTime && (now - parseInt(lastNotifTime)) < ONE_MINUTE) {
+          console.log('⏳ Notification rate limited for this list. Skipping.');
+          return;
+        }
+
         const userName = user?.user_metadata?.user_name || user?.user_metadata?.name || "Qualcuno";
         console.log('🔔 Sending notification to:', result.listOwnerId, 'from:', userName);
         
         try {
-          let response;
+          // Salva timestamp prima di inviare per evitare doppie chiamate rapide
+          localStorage.setItem(rateLimitKey, now.toString());
+
           if (result.vote === 1) {
-            response = await notifyUser.realVote(result.listOwnerId, userName, result.listTitle);
+            await notifyUser.realVote(result.listOwnerId, userName, result.listTitle);
           } else {
-            response = await notifyUser.fakeVote(result.listOwnerId, userName, result.listTitle);
+            await notifyUser.fakeVote(result.listOwnerId, userName, result.listTitle);
           }
-          console.log('🔔 Notification response:', response);
         } catch (err) {
           console.error('🔔 Notification error:', err);
         }

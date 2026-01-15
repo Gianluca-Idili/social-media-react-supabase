@@ -111,9 +111,15 @@ export const NotificationSettings = () => {
       if (result.success && result.sent && result.sent > 0) {
         setTestStatus(`✅ Push inviata! (${result.sent} dispositivi)`);
       } else if (result.success && result.sent === 0) {
-        setTestStatus('⚠️ Nessuna subscription trovata nel DB');
+        if (result.failed && result.failed > 0) {
+          const firstError = (result as any).errors?.[0] || 'Unknown error';
+          setTestStatus(`❌ Invio fallito: ${firstError}`);
+          console.error('❌ Push delivery failed:', (result as any).errors);
+        } else {
+          setTestStatus('⚠️ Nessuna subscription attiva trovata nel database.');
+        }
       } else {
-        setTestStatus(`❌ Errore: ${result.error || 'Sconosciuto'}`);
+        setTestStatus(`❌ Errore API: ${result.error || 'Sconosciuto'}`);
       }
     } catch (error) {
       console.error('Push test error:', error);
