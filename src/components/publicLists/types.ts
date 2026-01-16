@@ -12,6 +12,7 @@ export interface PublicList {
   profiles: {
     id: string;
     username: string;
+    avatar_url?: string;
   };
   tasks: {
     description: string;
@@ -47,6 +48,7 @@ export interface Profile {
   username: string;
   points?: number;
   email?: string;
+  avatar_url?: string;
   created_at?: string;
 }
 

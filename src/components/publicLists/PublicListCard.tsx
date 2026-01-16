@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 interface Profile {
   id: string;
   username: string;
+  avatar_url?: string;
 }
 
 interface Task {
@@ -100,8 +101,12 @@ console.log('Profile data:', profile);
       {/* Header */}
       <div className="flex items-center justify-between p-3.5 bg-gradient-to-r from-gray-700/50 to-purple-500/10">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md">
-            {profile.username.charAt(0).toUpperCase()}
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md overflow-hidden">
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
+            ) : (
+              <span>{profile.username.charAt(0).toUpperCase()}</span>
+            )}
           </div>
           <div className="min-w-0">
           <Link
@@ -123,10 +128,18 @@ console.log('Profile data:', profile);
           </div>
         </div>
 
-        {/* Mobile-only view count */}
-        <div className="sm:hidden flex items-center gap-1.5 text-gray-400">
-          <EyeIcon className="w-4 h-4" />
-          <span className="font-medium">{list.view_count ?? 0}</span>
+        {/* Mobile-only view count and Detail Link */}
+        <div className="flex items-center gap-3">
+          <Link 
+            to={`/list/${list.id}`}
+            className="text-xs font-bold text-purple-400 hover:text-purple-300 bg-purple-500/10 px-2 py-1 rounded-md transition-colors"
+          >
+            Vedi di più
+          </Link>
+          <div className="sm:hidden flex items-center gap-1.5 text-gray-400">
+            <EyeIcon className="w-4 h-4" />
+            <span className="font-medium">{list.view_count ?? 0}</span>
+          </div>
         </div>
       </div>
 

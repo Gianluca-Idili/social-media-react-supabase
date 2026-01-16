@@ -13,6 +13,7 @@ export interface Profile {
   email: string;
   points: number;
   created_at: string;
+  avatar_url?: string;
 }
 
 interface Props {
@@ -112,6 +113,7 @@ export const ProfileDetail = ({ profileId }: Props) => {
               email={profileData?.email || ""}
               points={profileData?.points || 0}
               createdAt={profileData?.created_at || ""}
+              avatarUrl={profileData?.avatar_url}
               onEdit={() => setIsEditing(true)}
             />
           </div>

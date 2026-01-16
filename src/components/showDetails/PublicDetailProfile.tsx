@@ -22,6 +22,7 @@ interface Stat {
 interface ProfileData {
   username: string;
   points: number;
+  avatar_url?: string;
   stats: ProfileStats;
   userStats: Stat[]; 
 }
@@ -51,7 +52,7 @@ export const PublicDetailProfile = ({ profileId }: { profileId: string }) => {
         
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("username, points")
+          .select("username, points, avatar_url")
           .eq("id", profileId)
           .single();
 
@@ -134,8 +135,12 @@ export const PublicDetailProfile = ({ profileId }: { profileId: string }) => {
       {/* Header con gradiente */}
       <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/30 rounded-t-xl p-6 border-b border-purple-500/20">
         <div className="flex flex-col items-center">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white text-4xl font-bold shadow-lg mb-4 ring-4 ring-purple-500/30">
-            {profile.username.charAt(0).toUpperCase()}
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white text-4xl font-bold shadow-lg mb-4 ring-4 ring-purple-500/30 overflow-hidden">
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
+            ) : (
+              <span>{profile.username.charAt(0).toUpperCase()}</span>
+            )}
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300 mb-2">

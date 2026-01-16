@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { supabase } from "../supabase-client";
 import { useAuth } from "../context/AuthContext";
-import { sendPushNotification } from "../utils/notifications";
+import { notifyUser } from "../utils/notifications";
 import { PublicDetailProfile } from "../components/showDetails/PublicDetailProfile";
 
 export const PublicProfilePage = () => {
@@ -20,11 +20,7 @@ export const PublicProfilePage = () => {
           .single();
 
         if (visitorData?.username) {
-          await sendPushNotification(profileId, {
-            title: '👁️ Visita al profilo',
-            body: `${visitorData.username} ha visitato il tuo profilo pubblico!`,
-            tag: 'profile-visit',
-          });
+          await notifyUser.profileVisit(profileId, visitorData.username, user.id);
         }
       };
 

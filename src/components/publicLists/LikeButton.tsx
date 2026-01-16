@@ -140,9 +140,9 @@ export const LikeButton = ({ listId }: Props) => {
           localStorage.setItem(rateLimitKey, now.toString());
 
           if (result.vote === 1) {
-            await notifyUser.realVote(result.listOwnerId, userName, result.listTitle);
+            await notifyUser.realVote(result.listOwnerId, userName, result.listTitle, listId);
           } else {
-            await notifyUser.fakeVote(result.listOwnerId, userName, result.listTitle);
+            await notifyUser.fakeVote(result.listOwnerId, userName, result.listTitle, listId);
           }
         } catch (err) {
           console.error('🔔 Notification error:', err);

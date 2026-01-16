@@ -15,23 +15,87 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
+  const syncProfile = async (user: User) => {
+    try {
+      console.log("🔄 Sincronizzazione profilo per:", user.email);
+      let usernameFromMeta = "";
+      let avatarUrl = "";
+      
+      if (user.app_metadata?.provider === "github") {
+        usernameFromMeta = user.user_metadata?.user_name || user.user_metadata?.preferred_username || "";
+        avatarUrl = user.user_metadata?.avatar_url || "";
+      } else if (user.app_metadata?.provider === "google") {
+        usernameFromMeta = user.user_metadata?.full_name || user.user_metadata?.name || "";
+        avatarUrl = user.user_metadata?.picture || "";
+      }
+
+      // Check if profile exists
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from("profiles")
+        .select("id, avatar_url, username")
+        .eq("id", user.id)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error("❌ Errore fetch profilo:", fetchError);
+        return;
+      }
+
+      if (!existingProfile) {
+        console.log("✨ Creazione nuovo profilo...");
+        const { error: insertError } = await supabase.from("profiles").insert({
+          id: user.id,
+          email: user.email || "",
+          username: usernameFromMeta || user.email?.split('@')[0] || "User",
+          avatar_url: avatarUrl,
+        });
+        if (insertError) console.error("❌ Errore insert profilo:", insertError);
+      } else {
+        // Update only if avatar is different or username is missing
+        const updates: any = {};
+        if (avatarUrl && existingProfile.avatar_url !== avatarUrl) {
+          updates.avatar_url = avatarUrl;
+        }
+        
+        if (Object.keys(updates).length > 0) {
+          console.log("📝 Aggiornamento profilo con:", updates);
+          const { error: updateError } = await supabase
+            .from("profiles")
+            .update(updates)
+            .eq("id", user.id);
+          if (updateError) console.error("❌ Errore update profilo:", updateError);
+        }
+      }
+    } catch (err) {
+      console.error("⚠️ Eccezione improvvisa in syncProfile:", err);
+    }
+  };
+
   useEffect(() => {
     // 1. Controlla lo stato iniziale
     const initializeAuth = async () => {
+      console.log("🔑 Inizializzazione Auth...");
       const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user ?? null;
-      setUser(user);
+      const currentUser = session?.user ?? null;
+      console.log("👤 User iniziale:", currentUser?.id || "Nessuno");
+      setUser(currentUser);
 
-      if (user) {
-        await handleProfileCreation(user);
+      if (currentUser) {
+        syncProfile(currentUser); // Non attendiamo per non bloccare l'app
       }
     };
 
     // 2. Listener per cambiamenti in tempo reale
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("🔄 Auth Event:", event);
         const currentUser = session?.user ?? null;
+        console.log("👤 Current User state:", currentUser?.id || "Nessuno");
         setUser(currentUser);
+        
+        if (currentUser && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+          syncProfile(currentUser); // Non attendiamo per non bloccare l'app
+        }
         
         // Forza cleanup completo su logout
         if (event === 'SIGNED_OUT') {
@@ -46,30 +110,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       subscription.unsubscribe();
     };
   }, []);
-
-  const handleProfileCreation = async (user: User) => {
-    const { error } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("id", user.id)
-      .single();
-
-    if (error?.code === "PGRST116") {
-      // Determina username in base al provider
-      let username = "";
-      if (user.app_metadata?.provider === "github") {
-        username = user.user_metadata?.user_name || user.user_metadata?.preferred_username || "";
-      } else if (user.app_metadata?.provider === "google") {
-        username = user.user_metadata?.full_name || user.user_metadata?.name || "";
-      }
-      
-      await supabase.from("profiles").insert({
-        id: user.id,
-        email: user.email || "",
-        username: username,
-      });
-    }
-  };
 
   const clearAuthState = () => {
     // Pulisci cache e storage

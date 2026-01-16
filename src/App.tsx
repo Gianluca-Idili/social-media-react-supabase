@@ -9,6 +9,7 @@ import { LeaderboardPage } from './pages/LeaderboardPage';
 import { ToastContainer } from 'react-toastify';
 import { UserListsPage } from './pages/UserListsPage';
 import { PublicProfilePage } from './pages/PubblicProfilePage';
+import { ListDetailPage } from './pages/ListDetailPage';
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -23,6 +24,7 @@ function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/list/create" element={<CreateListPage />} />
         <Route path="/lists" element={<PublicListsPage />} />
+        <Route path="/list/:id" element={<ListDetailPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/my-lists/:id" element={<UserListsPage />} />
         <Route path="/detail/profile/:profileId" element={<PublicProfilePage />} />

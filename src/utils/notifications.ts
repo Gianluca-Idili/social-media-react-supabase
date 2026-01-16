@@ -5,6 +5,7 @@ interface NotificationPayload {
   body: string;
   icon?: string;
   badge?: string;
+  image?: string;
   tag?: string;
   url?: string;
   data?: Record<string, unknown>;
@@ -62,56 +63,63 @@ export const sendPushNotification = async (
  */
 export const NotificationTemplates = {
   // Quando qualcuno vota Real sulla tua lista
-  newRealVote: (voterName: string, listTitle: string) => ({
+  newRealVote: (voterName: string, listTitle: string, listId: string) => ({
     title: '✅ Nuovo voto Real!',
     body: `${voterName} pensa che "${listTitle}" sia realistica!`,
     tag: 'vote-real',
+    url: `/list/${listId}`,
   }),
 
   // Quando qualcuno vota Fake sulla tua lista
-  newFakeVote: (voterName: string, listTitle: string) => ({
+  newFakeVote: (voterName: string, listTitle: string, listId: string) => ({
     title: '❌ Nuovo voto Fake',
     body: `${voterName} ha dubbi su "${listTitle}"`,
     tag: 'vote-fake',
+    url: `/list/${listId}`,
   }),
 
   // Quando una lista sta per scadere
-  listExpiring: (listTitle: string, hoursLeft: number) => ({
+  listExpiring: (listTitle: string, hoursLeft: number, listId: string) => ({
     title: '⏰ Lista in scadenza!',
     body: hoursLeft <= 1 
       ? `"${listTitle}" scade tra meno di un'ora!`
       : `"${listTitle}" scade tra ${hoursLeft} ore`,
     tag: 'expiring',
+    url: `/list/${listId}`,
   }),
 
   // Quando una lista è completata
-  listCompleted: (listTitle: string) => ({
+  listCompleted: (listTitle: string, listId: string) => ({
     title: '🎉 Obiettivo raggiunto!',
     body: `Hai completato "${listTitle}"! Fantastico!`,
     tag: 'completed',
+    url: `/list/${listId}`,
   }),
 
   // Quando qualcuno visita il profilo pubblico
-  profileVisit: (visitorName: string) => ({
+  profileVisit: (visitorName: string, visitorId: string) => ({
     title: '👁️ Visita al profilo',
     body: `${visitorName} ha visitato il tuo profilo pubblico!`,
     tag: 'profile-visit',
+    url: `/detail/profile/${visitorId}`,
   }),
 
   // Quando una lista scade
-  listExpired: (listTitle: string) => ({
+  listExpired: (listTitle: string, listId: string) => ({
     title: '⏳ Lista scaduta',
     body: `"${listTitle}" è scaduta. Puoi completarla comunque!`,
     tag: 'expired',
+    url: `/list/${listId}`,
   }),
 
   // Quando completi un task
-  taskCompleted: (taskName: string, remaining: number) => ({
+  taskCompleted: (taskName: string, remaining: number, listId: string) => ({
     title: '✨ Task completato!',
     body: remaining > 0 
       ? `"${taskName}" fatto! Ne mancano ${remaining}`
       : `"${taskName}" fatto! Lista completata!`,
     tag: 'task-done',
+    url: `/list/${listId}`,
   }),
 
   // Aggiornamento leaderboard - sei salito
@@ -119,6 +127,7 @@ export const NotificationTemplates = {
     title: '🏆 Stai scalando!',
     body: `Sei salito alla posizione #${position} in classifica!`,
     tag: 'leaderboard',
+    url: '/leaderboard',
   }),
 
   // Aggiornamento leaderboard - sei sceso
@@ -126,6 +135,7 @@ export const NotificationTemplates = {
     title: '📉 Classifica aggiornata',
     body: `Sei sceso alla posizione #${position}. Riconquista il podio!`,
     tag: 'leaderboard',
+    url: '/leaderboard',
   }),
 
   // Promemoria giornaliero
@@ -135,13 +145,15 @@ export const NotificationTemplates = {
       ? `Hai ${pendingTasks} task da completare oggi. Forza! 💪`
       : `Nessun task in sospeso. Crea una nuova sfida!`,
     tag: 'reminder',
+    url: '/lists',
   }),
 
   // Nuova lista pubblica da seguire
-  newPublicList: (authorName: string, listTitle: string) => ({
+  newPublicList: (authorName: string, listTitle: string, listId: string) => ({
     title: '📢 Nuova lista pubblica',
     body: `${authorName} ha pubblicato "${listTitle}"`,
     tag: 'new-list',
+    url: `/list/${listId}`,
   }),
 
   // Streak reminder
@@ -149,6 +161,7 @@ export const NotificationTemplates = {
     title: '🔥 Non perdere la streak!',
     body: `Hai una serie di ${days} giorni. Completa un task per mantenerla!`,
     tag: 'streak',
+    url: '/lists',
   }),
 };
 
@@ -156,24 +169,24 @@ export const NotificationTemplates = {
  * Helper per inviare notifiche con template - ITALIANO
  */
 export const notifyUser = {
-  realVote: async (userId: string, voterName: string, listTitle: string) => {
-    return sendPushNotification(userId, NotificationTemplates.newRealVote(voterName, listTitle));
+  realVote: async (userId: string, voterName: string, listTitle: string, listId: string) => {
+    return sendPushNotification(userId, NotificationTemplates.newRealVote(voterName, listTitle, listId));
   },
 
-  fakeVote: async (userId: string, voterName: string, listTitle: string) => {
-    return sendPushNotification(userId, NotificationTemplates.newFakeVote(voterName, listTitle));
+  fakeVote: async (userId: string, voterName: string, listTitle: string, listId: string) => {
+    return sendPushNotification(userId, NotificationTemplates.newFakeVote(voterName, listTitle, listId));
   },
 
-  expiring: async (userId: string, listTitle: string, hoursLeft: number) => {
-    return sendPushNotification(userId, NotificationTemplates.listExpiring(listTitle, hoursLeft));
+  expiring: async (userId: string, listTitle: string, hoursLeft: number, listId: string) => {
+    return sendPushNotification(userId, NotificationTemplates.listExpiring(listTitle, hoursLeft, listId));
   },
 
-  completed: async (userId: string, listTitle: string) => {
-    return sendPushNotification(userId, NotificationTemplates.listCompleted(listTitle));
+  completed: async (userId: string, listTitle: string, listId: string) => {
+    return sendPushNotification(userId, NotificationTemplates.listCompleted(listTitle, listId));
   },
 
-  taskDone: async (userId: string, taskName: string, remaining: number) => {
-    return sendPushNotification(userId, NotificationTemplates.taskCompleted(taskName, remaining));
+  taskDone: async (userId: string, taskName: string, remaining: number, listId: string) => {
+    return sendPushNotification(userId, NotificationTemplates.taskCompleted(taskName, remaining, listId));
   },
 
   leaderboardUp: async (userId: string, position: number) => {
@@ -184,20 +197,20 @@ export const notifyUser = {
     return sendPushNotification(userId, NotificationTemplates.leaderboardDown(position));
   },
 
-  profileVisit: async (userId: string, visitorName: string) => {
-    return sendPushNotification(userId, NotificationTemplates.profileVisit(visitorName));
+  profileVisit: async (userId: string, visitorName: string, visitorId: string) => {
+    return sendPushNotification(userId, NotificationTemplates.profileVisit(visitorName, visitorId));
   },
 
-  expired: async (userId: string, listTitle: string) => {
-    return sendPushNotification(userId, NotificationTemplates.listExpired(listTitle));
+  expired: async (userId: string, listTitle: string, listId: string) => {
+    return sendPushNotification(userId, NotificationTemplates.listExpired(listTitle, listId));
   },
 
   dailyReminder: async (userId: string, pendingTasks: number) => {
     return sendPushNotification(userId, NotificationTemplates.dailyReminder(pendingTasks));
   },
 
-  newList: async (userId: string, authorName: string, listTitle: string) => {
-    return sendPushNotification(userId, NotificationTemplates.newPublicList(authorName, listTitle));
+  newList: async (userId: string, authorName: string, listTitle: string, listId: string) => {
+    return sendPushNotification(userId, NotificationTemplates.newPublicList(authorName, listTitle, listId));
   },
 
   streak: async (userId: string, days: number) => {

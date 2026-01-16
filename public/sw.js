@@ -105,7 +105,16 @@ self.addEventListener('push', (event) => {
     try {
       const pushData = event.data.json();
       if (pushData && typeof pushData === 'object') {
-        notificationData = { ...notificationData, ...pushData };
+        // Unisci i dati e assicurati che 'url' finisca in 'data' per il click handler
+        notificationData = { 
+          ...notificationData, 
+          ...pushData,
+          data: {
+            ...notificationData.data,
+            ...pushData.data,
+            url: pushData.url || (pushData.data && pushData.data.url) || '/'
+          }
+        };
       }
     } catch (error) {
       console.warn('⚠️ Push data non è JSON, provo come testo:', error);

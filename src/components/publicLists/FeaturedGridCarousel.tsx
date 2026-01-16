@@ -28,7 +28,7 @@ const CompactListCard = ({ list }: { list: PublicList }) => {
     tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
   return (
-    <Link to={`/detail/profile/${list.user_id}`}>
+    <Link to={`/list/${list.id}`}>
       <motion.div
         whileHover={{ y: -4 }}
         className="h-full bg-gray-800 rounded-lg border border-gray-700 hover:border-purple-500 transition-all duration-300 overflow-hidden flex flex-col cursor-pointer group"

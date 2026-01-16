@@ -45,7 +45,7 @@ export const Home = () => {
         is_completed,
         view_count,
         user_id,
-        profiles:user_id(id, username),
+        profiles:user_id(id, username, avatar_url),
         tasks:tasks(description, is_completed)
       `
       )
@@ -109,7 +109,7 @@ export const Home = () => {
         is_completed,
         view_count,
         user_id,
-        profiles:user_id!inner(id, username),
+        profiles:user_id!inner(id, username, avatar_url),
         tasks:tasks(description, is_completed)
       `
       )
@@ -176,6 +176,42 @@ export const Home = () => {
           Scopri le liste più popolari, controverse e recenti della comunità
         </p>
       </div>
+
+      {/* How it Works Section */}
+      <motion.section 
+        className="mb-24"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Come Funziona?</h2>
+          <p className="text-gray-400">Inizia la tua scalata verso il successo in 5 semplici passi</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {[
+            { step: 1, title: "Scegli", desc: "Seleziona tra sfida Daily, Weekly o Monthly", icon: "📅", color: "from-blue-500 to-cyan-500" },
+            { step: 2, title: "Crea", desc: "Definisci il tuo obiettivo e i task necessari", icon: "✍️", color: "from-purple-500 to-pink-500" },
+            { step: 3, title: "Scommetti", desc: "Imposta premi o punizioni per motivarti", icon: "🎲", color: "from-orange-500 to-red-500" },
+            { step: 4, title: "Dimostra", desc: "Condividi la lista e ricevi voti dalla community", icon: "📢", color: "from-green-500 to-emerald-500" },
+            { step: 5, title: "Scala", desc: "Completa i task, ottieni punti e sali in classifica", icon: "🏆", color: "from-yellow-500 to-orange-500" }
+          ].map((item, idx) => (
+            <motion.div
+              key={idx}
+              whileHover={{ y: -8 }}
+              className="relative p-6 rounded-2xl bg-gray-900/50 border border-gray-800 backdrop-blur-sm group"
+            >
+              <div className={`absolute -top-3 -left-3 w-8 h-8 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center text-sm font-black text-white shadow-lg`}>
+                {item.step}
+              </div>
+              <div className="text-3xl mb-4">{item.icon}</div>
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">{item.title}</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </motion.section>
 
       {/* Carousels Section */}
       <div className="space-y-24 md:space-y-32">
