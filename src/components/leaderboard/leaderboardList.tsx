@@ -92,22 +92,24 @@ export const LeaderboardList = () => {
           </div>
         </div>
 
-        {/* Horizontal Scrollable Filters */}
-        <div className="w-full flex overflow-x-auto pb-2 scrollbar-none gap-2 px-4 justify-start md:justify-center">
-          {sortOptions.map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => setSortBy(opt.id)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border whitespace-nowrap transition-all duration-300 ${
-                sortBy === opt.id
-                  ? `bg-gradient-to-r from-purple-600 to-pink-600 border-white/20 text-white shadow-lg shadow-purple-500/20 scale-105`
-                  : `bg-gray-900/50 border-gray-800 text-gray-400 hover:border-gray-700`
-              }`}
-            >
-              {opt.icon}
-              <span className="text-sm font-bold uppercase tracking-wider">{opt.label}</span>
-            </button>
-          ))}
+        {/* Filter Chips - Wrapping on Mobile */}
+        <div className="w-full">
+          <div className="flex flex-wrap justify-center gap-2 px-2">
+            {sortOptions.map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => setSortBy(opt.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-300 ${
+                  sortBy === opt.id
+                    ? `bg-gradient-to-r from-purple-600 to-pink-600 border-white/20 text-white shadow-lg shadow-purple-500/20 scale-105 z-10`
+                    : `bg-gray-900/50 border-gray-800 text-gray-400 hover:border-gray-700`
+                }`}
+              >
+                {opt.icon}
+                <span className="text-sm font-bold uppercase tracking-wider">{opt.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

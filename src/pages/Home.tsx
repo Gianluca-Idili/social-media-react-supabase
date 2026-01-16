@@ -246,7 +246,7 @@ export const Home = () => {
             </Link>
           </div>
           <div className="relative px-0">
-            <FeaturedGridCarousel queryKey="mostViewed" queryFn={fetchMostViewedLists} />
+            <FeaturedGridCarousel queryKey="mostViewed" queryFn={fetchMostViewedLists} isMirrored={true} />
           </div>
         </motion.section>
 
