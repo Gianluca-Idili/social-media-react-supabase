@@ -69,7 +69,7 @@ export function CardList({ list }: ListCardProps) {
 
       // Send notification when list is completed
       if (allCompleted && !list.is_completed) {
-        await notifyUser.completed(list.user_id, list.title);
+        await notifyUser.completed(list.user_id, list.title, list.id);
       }
 
       await queryClient.invalidateQueries({

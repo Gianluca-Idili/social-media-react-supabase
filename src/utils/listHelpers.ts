@@ -145,7 +145,7 @@ export const checkListsExpiringWithin6Hours = async (userId: string) => {
       const expiresAt = new Date(list.expires_at as string);
       const hoursLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / (60 * 60 * 1000));
       
-      await notifyUser.expiring(userId, list.title, hoursLeft);
+      await notifyUser.expiring(userId, list.title, hoursLeft, list.id);
 
       // Mark as notification sent
       await supabase
