@@ -30,6 +30,7 @@ export const sendPushNotification = async (
           ...payload,
           icon: payload.icon || '/icon-192.png',
           badge: payload.badge || '/icon-192.png',
+          image: payload.image || '/icon-512.png', // Aggiunge l'immagine grande della brand identity
         }
       }
     });

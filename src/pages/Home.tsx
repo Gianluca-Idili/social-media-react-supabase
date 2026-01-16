@@ -85,6 +85,16 @@ export const Home = () => {
     return data as PublicList[];
   };
 
+  const fetchMostLikedLists = async (): Promise<PublicList[]> => {
+    const { data, error } = await supabase
+      .rpc("get_lists_with_likes")
+      .order("likes", { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+    return data as PublicList[];
+  };
+
   const fetchMostRecentLists = async (): Promise<PublicList[]> => {
     const { data, error } = await supabase
       .from("lists")
@@ -176,17 +186,66 @@ export const Home = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <div className="mb-6 md:mb-8 flex items-center gap-4">
-            <div className="w-1 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
-                ⭐ Liste Più Visualizzate
-              </h2>
-              <p className="text-sm text-gray-400 mt-1">Le preferite della comunità</p>
+          <div className="mb-6 md:mb-8 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-1 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white">
+                  ⭐ Liste Più Visualizzate
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">Le preferite della comunità</p>
+              </div>
             </div>
+            <Link 
+              to="/lists?sort=views"
+              className="text-purple-400 hover:text-purple-300 font-medium transition-colors text-sm md:text-base flex items-center gap-1 group"
+            >
+              Vedi tutto
+              <svg 
+                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" 
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
           <div className="relative px-0">
             <FeaturedGridCarousel queryKey="mostViewed" queryFn={fetchMostViewedLists} />
+          </div>
+        </motion.section>
+
+        {/* Most Liked Carousel */}
+        <motion.section 
+          className="relative"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+        >
+          <div className="mb-6 md:mb-8 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white">
+                  👍 Più "Real"
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">Le prove più convincenti</p>
+              </div>
+            </div>
+            <Link 
+              to="/lists?sort=real"
+              className="text-green-400 hover:text-green-300 font-medium transition-colors text-sm md:text-base flex items-center gap-1 group"
+            >
+              Vedi tutto
+              <svg 
+                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" 
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+          <div className="relative px-0">
+            <FeaturedGridCarousel queryKey="mostLiked" queryFn={fetchMostLikedLists} />
           </div>
         </motion.section>
 
@@ -197,14 +256,28 @@ export const Home = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="mb-6 md:mb-8 flex items-center gap-4">
-            <div className="w-1 h-8 bg-gradient-to-b from-pink-500 to-purple-500 rounded-full"></div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
-                🆕 Aggiunte di Recente
-              </h2>
-              <p className="text-sm text-gray-400 mt-1">Le ultime liste pubblicate</p>
+          <div className="mb-6 md:mb-8 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-1 h-8 bg-gradient-to-b from-pink-500 to-purple-500 rounded-full"></div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white">
+                  🆕 Aggiunte di Recente
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">Le ultime liste pubblicate</p>
+              </div>
             </div>
+            <Link 
+              to="/lists?sort=recent"
+              className="text-pink-400 hover:text-pink-300 font-medium transition-colors text-sm md:text-base flex items-center gap-1 group"
+            >
+              Vedi tutto
+              <svg 
+                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" 
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
           <div className="relative px-0">
             <FeaturedGridCarousel queryKey="mostRecent" queryFn={fetchMostRecentLists} isMirrored={true} />
@@ -218,14 +291,29 @@ export const Home = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <div className="mb-6 md:mb-8 flex items-center gap-4">
-            <div className="w-1 h-8 bg-gradient-to-b from-red-500 to-yellow-500 rounded-full"></div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
-                🔥 Più Controverse
-              </h2>
-              <p className="text-sm text-gray-400 mt-1">Le più discusse</p>
+          <div className="mb-6 md:mb-8 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-1 h-8 bg-gradient-to-b from-red-500 to-yellow-500 rounded-full"></div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white">
+                  🔥 Più Controverse
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">Le più discusse</p>
+              </div>
             </div>
+            {/* Disclaimer: ora puntiamo al filtro 'fake' dedicato */}
+            <Link 
+              to="/lists?sort=fake"
+              className="text-red-400 hover:text-red-300 font-medium transition-colors text-sm md:text-base flex items-center gap-1 group"
+            >
+              Vedi tutto
+              <svg 
+                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" 
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
           <div className="relative px-0">
             <FeaturedGridCarousel queryKey="mostDisliked" queryFn={fetchMostDislikedLists} />
