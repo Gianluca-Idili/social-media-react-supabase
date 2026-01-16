@@ -63,67 +63,67 @@ export const sendPushNotification = async (
  */
 export const NotificationTemplates = {
   // Quando qualcuno vota Real sulla tua lista
-  newRealVote: (voterName: string, listTitle: string, listId: string) => ({
+  newRealVote: (voterName: string = "Qualcuno", listTitle: string = "Lista", listId: string = "") => ({
     title: '✅ Nuovo voto Real!',
     body: `${voterName} pensa che "${listTitle}" sia realistica!`,
     tag: 'vote-real',
-    url: `/list/${listId}`,
+    url: listId ? `/list/${listId}` : undefined,
   }),
 
   // Quando qualcuno vota Fake sulla tua lista
-  newFakeVote: (voterName: string, listTitle: string, listId: string) => ({
+  newFakeVote: (voterName: string = "Qualcuno", listTitle: string = "Lista", listId: string = "") => ({
     title: '❌ Nuovo voto Fake',
     body: `${voterName} ha dubbi su "${listTitle}"`,
     tag: 'vote-fake',
-    url: `/list/${listId}`,
+    url: listId ? `/list/${listId}` : undefined,
   }),
 
   // Quando una lista sta per scadere
-  listExpiring: (listTitle: string, hoursLeft: number, listId: string) => ({
+  listExpiring: (listTitle: string = "Lista", hoursLeft: number = 0, listId: string = "") => ({
     title: '⏰ Lista in scadenza!',
     body: hoursLeft <= 1 
       ? `"${listTitle}" scade tra meno di un'ora!`
       : `"${listTitle}" scade tra ${hoursLeft} ore`,
     tag: 'expiring',
-    url: `/list/${listId}`,
+    url: listId ? `/list/${listId}` : undefined,
   }),
 
   // Quando una lista è completata
-  listCompleted: (listTitle: string, listId: string) => ({
+  listCompleted: (listTitle: string = "Lista", listId: string = "") => ({
     title: '🎉 Obiettivo raggiunto!',
     body: `Hai completato "${listTitle}"! Fantastico!`,
     tag: 'completed',
-    url: `/list/${listId}`,
+    url: listId ? `/list/${listId}` : undefined,
   }),
 
   // Quando qualcuno visita il profilo pubblico
-  profileVisit: (visitorName: string, visitorId: string) => ({
+  profileVisit: (visitorName: string = "Qualcuno", visitorId: string = "") => ({
     title: '👁️ Visita al profilo',
     body: `${visitorName} ha visitato il tuo profilo pubblico!`,
     tag: 'profile-visit',
-    url: `/detail/profile/${visitorId}`,
+    url: visitorId ? `/detail/profile/${visitorId}` : undefined,
   }),
 
   // Quando una lista scade
-  listExpired: (listTitle: string, listId: string) => ({
+  listExpired: (listTitle: string = "Lista", listId: string = "") => ({
     title: '⏳ Lista scaduta',
     body: `"${listTitle}" è scaduta. Puoi completarla comunque!`,
     tag: 'expired',
-    url: `/list/${listId}`,
+    url: listId ? `/list/${listId}` : undefined,
   }),
 
   // Quando completi un task
-  taskCompleted: (taskName: string, remaining: number, listId: string) => ({
+  taskCompleted: (taskName: string = "Task", remaining: number = 0, listId: string = "") => ({
     title: '✨ Task completato!',
     body: remaining > 0 
       ? `"${taskName}" fatto! Ne mancano ${remaining}`
       : `"${taskName}" fatto! Lista completata!`,
     tag: 'task-done',
-    url: `/list/${listId}`,
+    url: listId ? `/list/${listId}` : undefined,
   }),
 
   // Aggiornamento leaderboard - sei salito
-  leaderboardUp: (position: number) => ({
+  leaderboardUp: (position: number = 0) => ({
     title: '🏆 Stai scalando!',
     body: `Sei salito alla posizione #${position} in classifica!`,
     tag: 'leaderboard',
@@ -131,7 +131,7 @@ export const NotificationTemplates = {
   }),
 
   // Aggiornamento leaderboard - sei sceso
-  leaderboardDown: (position: number) => ({
+  leaderboardDown: (position: number = 0) => ({
     title: '📉 Classifica aggiornata',
     body: `Sei sceso alla posizione #${position}. Riconquista il podio!`,
     tag: 'leaderboard',
@@ -139,7 +139,7 @@ export const NotificationTemplates = {
   }),
 
   // Promemoria giornaliero
-  dailyReminder: (pendingTasks: number) => ({
+  dailyReminder: (pendingTasks: number = 0) => ({
     title: '📋 Buongiorno!',
     body: pendingTasks > 0
       ? `Hai ${pendingTasks} task da completare oggi. Forza! 💪`
@@ -149,15 +149,15 @@ export const NotificationTemplates = {
   }),
 
   // Nuova lista pubblica da seguire
-  newPublicList: (authorName: string, listTitle: string, listId: string) => ({
+  newPublicList: (authorName: string = "Qualcuno", listTitle: string = "Lista", listId: string = "") => ({
     title: '📢 Nuova lista pubblica',
     body: `${authorName} ha pubblicato "${listTitle}"`,
     tag: 'new-list',
-    url: `/list/${listId}`,
+    url: listId ? `/list/${listId}` : undefined,
   }),
 
   // Streak reminder
-  streakReminder: (days: number) => ({
+  streakReminder: (days: number = 0) => ({
     title: '🔥 Non perdere la streak!',
     body: `Hai una serie di ${days} giorni. Completa un task per mantenerla!`,
     tag: 'streak',
@@ -169,51 +169,51 @@ export const NotificationTemplates = {
  * Helper per inviare notifiche con template - ITALIANO
  */
 export const notifyUser = {
-  realVote: async (userId: string, voterName: string, listTitle: string, listId: string) => {
+  realVote: async (userId: string, voterName?: string, listTitle?: string, listId?: string) => {
     return sendPushNotification(userId, NotificationTemplates.newRealVote(voterName, listTitle, listId));
   },
 
-  fakeVote: async (userId: string, voterName: string, listTitle: string, listId: string) => {
+  fakeVote: async (userId: string, voterName?: string, listTitle?: string, listId?: string) => {
     return sendPushNotification(userId, NotificationTemplates.newFakeVote(voterName, listTitle, listId));
   },
 
-  expiring: async (userId: string, listTitle: string, hoursLeft: number, listId: string) => {
+  expiring: async (userId: string, listTitle?: string, hoursLeft?: number, listId?: string) => {
     return sendPushNotification(userId, NotificationTemplates.listExpiring(listTitle, hoursLeft, listId));
   },
 
-  completed: async (userId: string, listTitle: string, listId: string) => {
+  completed: async (userId: string, listTitle?: string, listId?: string) => {
     return sendPushNotification(userId, NotificationTemplates.listCompleted(listTitle, listId));
   },
 
-  taskDone: async (userId: string, taskName: string, remaining: number, listId: string) => {
+  taskDone: async (userId: string, taskName?: string, remaining?: number, listId?: string) => {
     return sendPushNotification(userId, NotificationTemplates.taskCompleted(taskName, remaining, listId));
   },
 
-  leaderboardUp: async (userId: string, position: number) => {
+  leaderboardUp: async (userId: string, position?: number) => {
     return sendPushNotification(userId, NotificationTemplates.leaderboardUp(position));
   },
 
-  leaderboardDown: async (userId: string, position: number) => {
+  leaderboardDown: async (userId: string, position?: number) => {
     return sendPushNotification(userId, NotificationTemplates.leaderboardDown(position));
   },
 
-  profileVisit: async (userId: string, visitorName: string, visitorId: string) => {
+  profileVisit: async (userId: string, visitorName?: string, visitorId?: string) => {
     return sendPushNotification(userId, NotificationTemplates.profileVisit(visitorName, visitorId));
   },
 
-  expired: async (userId: string, listTitle: string, listId: string) => {
+  expired: async (userId: string, listTitle?: string, listId?: string) => {
     return sendPushNotification(userId, NotificationTemplates.listExpired(listTitle, listId));
   },
 
-  dailyReminder: async (userId: string, pendingTasks: number) => {
+  dailyReminder: async (userId: string, pendingTasks?: number) => {
     return sendPushNotification(userId, NotificationTemplates.dailyReminder(pendingTasks));
   },
 
-  newList: async (userId: string, authorName: string, listTitle: string, listId: string) => {
+  newList: async (userId: string, authorName?: string, listTitle?: string, listId?: string) => {
     return sendPushNotification(userId, NotificationTemplates.newPublicList(authorName, listTitle, listId));
   },
 
-  streak: async (userId: string, days: number) => {
+  streak: async (userId: string, days?: number) => {
     return sendPushNotification(userId, NotificationTemplates.streakReminder(days));
   },
 };
